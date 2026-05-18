@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NexusDesk — Service Inventory Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{width:100%;height:100%}
+:root {
+  /* Matte Black & Cyberpunk Cyber Colors */
+  --bg:#030712;--bg2:#0B0F19;--bg3:#111827;--bg4:#1F2937;
+  --surface:#0F172A;--surface2:#1E293B;--surface3:#334155;
+  --border:#1E293B;--border2:#475569;
+  --accent:#38BDF8;/* Neon Blue */
+  --accent2:#A855F7;/* Neon Purple */
+  --accentglow:rgba(56,189,248,0.2);
+  --gold:#F5C842;--goldglow:rgba(245,200,66,0.12);
+  --green:#10B981;--red:#EF4444;--orange:#F97316;--purple:#C084FC;
+  --text:#F8FAFC;--text2:#94A3B8;--text3:#64748B;
+  --font-head:'Orbitron', sans-serif;/* Your Cool New Font Hook! */
+  --font-body:'DM Sans',sans-serif;
+  --r:12px;--r2:8px;--r3:20px;
+  --shadow:0 4px 24px rgba(0,0,0,0.6);--shadow2:0 8px 40px rgba(0,0,0,0.8);
+}
+.light-theme {
+  --bg: #F4F7FC;
+  --bg2: #FFFFFF;
+  --bg3: #EBF1FA;
+  --bg4: #DFE7F3;
+  --surface: #FFFFFF;
+  --surface2: #F0F4FC;
+  --surface3: #E2EAF8;
+  --border: #D0DBEA;
+  --border2: #BFCFEE;
+  --text: #1E293B;
+  --text2: #64748B;
+  --text3: #94A3B8;
+  --shadow: 0 4px 24px rgba(148, 163, 184, 0.15);
+  --shadow2: 0 8px 40px rgba(148, 163, 184, 0.25);
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);width:100%;min-height:100vh;height:100%;overflow-x:hidden}
+input,select,textarea,button{font-family:var(--font-body)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.glass{background:rgba(20,29,46,0.7);backdrop-filter:blur(20px);border:1px solid var(--border)}
+.glow-accent{box-shadow:0 0 0 1px var(--accent),0 0 20px var(--accentglow)}
+.glow-gold{box-shadow:0 0 0 1px var(--gold),0 0 20px var(--goldglow)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.4px;text-transform:uppercase}
+.tag-open{background:rgba(79,142,247,.15);color:#6aa3ff;border:1px solid rgba(79,142,247,.3)}
+.tag-progress{background:rgba(245,200,66,.12);color:#F5C842;border:1px solid rgba(245,200,66,.3)}
+.tag-resolved{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.tag-critical{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.tag-high{background:rgba(249,115,22,.12);color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+.tag-medium{background:rgba(245,200,66,.12);color:#F5C842;border:1px solid rgba(245,200,66,.3)}
+.tag-low{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r2);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;letter-spacing:.3px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,142,247,.4)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);background:var(--accentglow)}
+.btn-danger{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-gold{background:var(--gold);color:#1a1400;font-weight:600}
+.btn-gold:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.inp{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentglow)}
+.inp::placeholder{color:var(--text3)}
+.inp-area{resize:vertical;min-height:90px}
+select.inp option{background:var(--bg3)}
+.lbl{font-size:11.5px;color:var(--text2);font-weight:500;letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .2s}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow2)}
+.modal-lg{max-width:780px}
+.modal-head{padding:24px 28px 0;border-bottom:1px solid var(--border);padding-bottom:18px;margin-bottom:0}
+.modal-body{padding:24px 28px}
+.modal-foot{padding:16px 28px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:var(--r2);cursor:pointer;transition:all .2s;font-size:13.5px;color:var(--text2);font-weight:400;white-space:nowrap}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accentglow);color:var(--accent);font-weight:500;border:1px solid rgba(79,142,247,.2)}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.4}
+.stat-card.blue::before{background:var(--accent)}
+.stat-card.gold::before{background:var(--gold)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.red::before{background:var(--red)}
+.stat-card.purple::before{background:var(--purple)}
+.stat-num{font-family:var(--font-head);font-size:36px;font-weight:700;line-height:1;letter-spacing:-1px}
+.stat-label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:2px solid var(--border2);background:var(--surface)}
+.avatar-lg{width:58px;height:58px;font-size:30px;border-width:2px}
+.avatar-sm{width:30px;height:30px;font-size:15px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2)}
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--surface3);border:1px solid var(--border2);border-radius:var(--r);padding:14px 20px;font-size:13.5px;box-shadow:var(--shadow2);animation:slideUp .3s;max-width:340px}
+.toast.success{border-color:rgba(34,197,94,.4);color:#4ade80}
+.toast.error{border-color:rgba(239,68,68,.4);color:#f87171}
+.progress-bar{height:4px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.flex{display:flex;align-items:center}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.flex-gap{display:flex;align-items:center;gap:10px}
+.flex-col{display:flex;flex-direction:column;gap:10px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 14px;color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid rgba(30,45,72,.5);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(79,142,247,.03)}
+.bitmoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.bitmoji-opt{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;border:2px solid transparent;transition:all .2s;background:var(--surface2)}
+.bitmoji-opt:hover{border-color:var(--accent);transform:scale(1.1)}
+.bitmoji-opt.selected{border-color:var(--gold);background:var(--goldglow);box-shadow:0 0 12px var(--goldglow)}
+.search-inp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:9px 14px 9px 38px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;width:240px}
+.search-inp:focus{border-color:var(--accent)}
+.search-wrap{position:relative}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.timeline-item{display:flex;gap:14px;padding-bottom:18px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1px;background:var(--border)}
+.timeline-item:last-child::before{display:none}
+.timeline-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-top:2px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:13px;margin-top:6px}
+.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);min-height:100vh;display:flex;flex-direction:column;padding:20px 12px;gap:4px;position:fixed;left:0;top:0;bottom:0;z-index:100;overflow-y:auto}
+.main-area{margin-left:240px;flex:1;width:calc(100% - 240px);min-height:100vh;padding:28px 32px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.brand{font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-1px;display:flex;align-items:center;gap:8px;margin-bottom:24px;padding:0 4px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.section-head{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.img-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--r2);margin-top:8px}
+.file-drop{border:2px dashed var(--border2);border-radius:var(--r);padding:24px;text-align:center;cursor:pointer;transition:all .2s;color:var(--text3)}
+.file-drop:hover{border-color:var(--accent);color:var(--accent);background:var(--accentglow)}
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-label{font-size:12px;color:var(--text2);width:90px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:24px;background:var(--surface2);border-radius:4px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s ease;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:#fff}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.donut-leg-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.donut-dot{width:10px;height:10px;border-radius:2px}
+.notif-badge{background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.animate-in{animation:slideIn .3s ease}
+.pulse{animation:pulse 2s infinite}
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.auth-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(79,142,247,.08) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 80% 80%,rgba(168,85,247,.05) 0%,transparent 60%)}
+.auth-card{width:100%;max-width:440px;position:relative;z-index:1}
+.auth-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;gap:4px;margin-bottom:28px}
+.auth-tab{flex:1;padding:9px;text-align:center;border-radius:var(--r2);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;color:var(--text2)}
+.auth-tab.active{background:var(--accent);color:#fff}
+.landing{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:40px}
+.landing-bg{position:absolute;inset:0;background:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(79,142,247,.1) 0%,transparent 65%),radial-gradient(circle at 20% 80%,rgba(168,85,247,.06) 0%,transparent 40%),radial-gradient(circle at 80% 20%,rgba(245,200,66,.04) 0%,transparent 40%)}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:.3;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)}
+.landing h1{font-family:var(--font-head);font-size:clamp(40px,6vw,72px);font-weight:800;letter-spacing:-3px;line-height:1.05;margin-bottom:20px}
+.landing h1 span{background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.landing p{font-size:18px;color:var(--text2);max-width:560px;line-height:1.6;margin-bottom:40px;font-weight:300}
+.landing-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.btn-large{padding:14px 32px;font-size:15px;border-radius:var(--r)}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:860px;margin-top:70px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;text-align:left}
+.feature-icon{font-size:28px;margin-bottom:14px}
+.feature-card h3{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:6px}
+.feature-card p{font-size:13px;color:var(--text2);line-height:1.6}
+.device-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;cursor:default}
+.device-card:hover{border-color:var(--accent)}
+.device-icon{font-size:32px;margin-bottom:4px}
+.ticket-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;gap:14px;transition:all .2s;cursor:pointer}
+.ticket-row:hover{border-color:var(--border2);background:var(--surface2)}
+@media(max-width:900px){
+  .sidebar{width:200px}
+  .main-area{margin-left:200px;width:calc(100% - 200px);padding:20px}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .feature-grid{grid-template-columns:1fr 1fr}
+}
+/* Premium Floating Form Interactive Styles */
+.form-group {
+  position: relative;
+  margin-bottom: 22px;
+  width: 100%;
+}
+.floating-inp {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 14px 16px 10px 16px; /* Shifted down for room */
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-inp:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accentglow);
+  background: var(--bg2);
+}
+.floating-lbl {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  text-transform: none; /* Soft lowercase look */
+  letter-spacing: 0px;
+}
+/* Magically shrink and push label up when active or filled */
+.floating-inp:focus ~ .floating-lbl,
+.floating-inp:not(:placeholder-shown) ~ .floating-lbl {
+  top: 12px;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.pass-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 10;
+}
+.pass-toggle-btn:hover {
+  color: var(--accent);
+}
+.auth-card-premium {
+  box-shadow: var(--shadow2);
+  border: 1px solid var(--border);
+  border-radius: var(--r3) !important;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+</style>
+</head>
+<body>
+<div id="root" style="width:100%;min-height:100vh"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+
+const BITMOJIS=['😀','😎','🤓','🥳','😏','🤩','🧑‍💻','👩‍💼','👨‍💼','🧑‍🔬','👩‍🎨','🧑‍🚀','🦸','🧙','🥷','🤖','👾','🎭','🦊','🐺','🦁','🐯','🦅','🦋','🐬','🦄','🌟','⚡','🔥','💎','🎯','🏆'];
+const PRIORITIES=['Low','Medium','High','Critical'];
+const ISSUE_CATEGORIES=['Hardware Failure','Software Issue','Connectivity','Performance','Display','Battery','Keyboard/Mouse','Other'];
+const DEVICE_TYPES=['Laptop','Desktop','Monitor','Printer','Scanner','Phone','Tablet','Server','Router','Switch','UPS','Camera','Projector','Other'];
+
+function generateId(){return Math.random().toString(36).slice(2,9).toUpperCase();}
+function today(){return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+function now(){return new Date().toLocaleString('en-IN',{hour12:false});}
+function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
+
+const INITIAL_DATA={
+  company:{name:'Demo Corp',logo:'🏢',branches:[
+    {id:'BR001',name:'HQ — New Delhi',country:'India',state:'Delhi'},
+    {id:'BR002',name:'Mumbai Office',country:'India',state:'Maharashtra'},
+    {id:'BR003',name:'Singapore Branch',country:'Singapore',state:''},
+  ]},
+  users:[
+    {id:'USR001',name:'Priya Sharma',email:'priya@democorp.com',password:'user123',role:'user',bitmoji:'👩‍💼',department:'Engineering',designation:'Sr. Engineer',doj:'2021-03-15',branch:'BR001',phone:'+91 98765 43210',employeeId:'EMP001',active:true},
+    {id:'USR002',name:'Rahul Mehta',email:'rahul@democorp.com',password:'user123',role:'user',bitmoji:'🧑‍💻',department:'IT Support',designation:'Support Lead',doj:'2020-07-01',branch:'BR001',phone:'+91 87654 32109',employeeId:'EMP002',active:true},
+    {id:'USR003',name:'Sofia Chen',email:'sofia@democorp.com',password:'user123',role:'user',bitmoji:'🧑‍🎨',department:'Design',designation:'UX Designer',doj:'2022-01-20',branch:'BR002',phone:'+65 9123 4567',employeeId:'EMP003',active:true},
+  ],
+  admins:[
+    {id:'ADM001',name:'Admin User',email:'admin@democorp.com',password:'admin123',role:'admin',bitmoji:'🦸',department:'IT Operations',designation:'IT Manager',branch:'BR001',active:true},
+    {id:'ADM002',name:'Sarah Wilson',email:'sarah@democorp.com',password:'admin123',role:'admin',bitmoji:'🤩',department:'Operations',designation:'Operations Head',branch:'BR002',active:true},
+  ],
+  devices:[
+    {id:'DEV001',name:'MacBook Pro 16"',type:'Laptop',brand:'Apple',model:'MacBook Pro M3',serial:'MBP2023X001',color:'Space Gray',buyDate:'2023-01-15',warranty:'2026-01-15',warrantyCard:'WC-APPLE-001',status:'Assigned',assignedTo:'USR001',assignedDate:'2023-02-01',branch:'BR001',price:185000,history:[{user:'USR001',from:'2023-02-01',to:null}]},
+    {id:'DEV002',name:'Dell Monitor 27"',type:'Monitor',brand:'Dell',model:'UltraSharp U2722D',serial:'DLM2022Y002',color:'Black',buyDate:'2022-06-10',warranty:'2025-06-10',warrantyCard:'WC-DELL-002',status:'Assigned',assignedTo:'USR001',assignedDate:'2022-06-15',branch:'BR001',price:42000,history:[{user:'USR001',from:'2022-06-15',to:null}]},
+    {id:'DEV003',name:'ThinkPad E15',type:'Laptop',brand:'Lenovo',model:'ThinkPad E15 Gen4',serial:'LNV2023Z003',color:'Black',buyDate:'2023-04-20',warranty:'2026-04-20',warrantyCard:'WC-LNV-003',status:'Assigned',assignedTo:'USR002',assignedDate:'2023-05-01',branch:'BR001',price:78000,history:[{user:'USR002',from:'2023-05-01',to:null}]},
+    {id:'DEV004',name:'iPad Pro 12.9"',type:'Tablet',brand:'Apple',model:'iPad Pro M2',serial:'IPD2023A004',color:'Silver',buyDate:'2023-08-01',warranty:'2025-08-01',warrantyCard:'WC-APPLE-004',status:'Assigned',assignedTo:'USR003',assignedDate:'2023-08-05',branch:'BR002',price:110000,history:[{user:'USR003',from:'2023-08-05',to:null}]},
+    {id:'DEV005',name:'HP LaserJet Pro',type:'Printer',brand:'HP',model:'LaserJet M428fdw',serial:'HPP2022B005',color:'White',buyDate:'2022-03-10',warranty:'2025-03-10',warrantyCard:'WC-HP-005',status:'Available',assignedTo:null,assignedDate:null,branch:'BR001',price:32000,history:[]},
+    {id:'DEV006',name:'Cisco Switch 24P',type:'Switch',brand:'Cisco',model:'Catalyst 2960-X',serial:'CSC2021C006',color:'Gray',buyDate:'2021-11-20',warranty:'2024-11-20',warrantyCard:'WC-CISCO-006',status:'Available',assignedTo:null,assignedDate:null,branch:'BR002',price:95000,history:[]},
+  ],
+  tickets:[
+    {id:'TKT001',title:'MacBook Pro overheating during compilation',category:'Performance',priority:'High',status:'Resolved',description:'Laptop gets extremely hot during builds, fans run at max constantly.',images:[],raisedBy:'USR001',raisedDate:'2024-01-10T10:30:00',device:'DEV001',resolvedBy:'ADM001',resolvedDate:'2024-01-12T15:00:00',resolutionNote:'Replaced thermal paste and cleaned fans. Issue resolved.',comments:[{by:'ADM001',text:'Working on it, will update soon.',date:'2024-01-11T09:00:00'},{by:'USR001',text:'Thank you! Still hot though.',date:'2024-01-11T14:00:00'},{by:'ADM001',text:'Fixed! Thermal paste replaced.',date:'2024-01-12T15:00:00'}],branch:'BR001'},
+    {id:'TKT002',title:'Dell Monitor flickering randomly',category:'Display',priority:'Medium',status:'In Progress',description:'Monitor flickers every few minutes, especially on video calls.',images:[],raisedBy:'USR001',raisedDate:'2024-01-20T08:00:00',device:'DEV002',resolvedBy:null,resolvedDate:null,resolutionNote:null,comments:[{by:'ADM001',text:'Ordered replacement cable. Will fix this week.',date:'2024-01-21T10:00:00'}],branch:'BR001'},
+    {id:'TKT003',title:'ThinkPad keyboard keys not working',category:'Keyboard/Mouse',priority:'Critical',status:'Open',description:'Several keys on the keyboard stopped working. F1-F5 and some letters.',images:[],raisedBy:'USR002',raisedDate:'2024-01-22T11:00:00',device:'DEV003',resolvedBy:null,resolvedDate:null,resolutionNote:null,comments:[],branch:'BR001'},
+    {id:'TKT004',title:'iPad battery draining too fast',category:'Battery',priority:'Low',status:'Resolved',description:'Battery drops from 100% to 20% in just 3 hours.',images:[],raisedBy:'USR003',raisedDate:'2024-01-05T09:00:00',device:'DEV004',resolvedBy:'ADM002',resolvedDate:'2024-01-08T12:00:00',resolutionNote:'Battery replaced under warranty. Device working fine now.',comments:[],branch:'BR002'},
+  ],
+};
+
+function loadData(){
+  try{const d=localStorage.getItem('nexusdesk_v2');return d?JSON.parse(d):INITIAL_DATA;}catch{return INITIAL_DATA;}
+}
+function saveData(d){
+  try{localStorage.setItem('nexusdesk_v2',JSON.stringify(d));}catch(e){console.error(e);}
+}
+
+// Theme Switcher Component
+function ThemeToggle() {
+  const [isLight, setIsLight] = useState(() => document.body.classList.contains('light-theme'));
+
+  const toggleTheme = () => {
+    if (document.body.classList.contains('light-theme')) {
+      document.body.classList.remove('light-theme');
+      setIsLight(false);
+    } else {
+      document.body.classList.add('light-theme');
+      setIsLight(true);
+    }
+  };
+
+  return (
+    <button 
+      className="btn btn-ghost" 
+      onClick={toggleTheme}
+      style={{
+        position: 'fixed',
+        top: 20,
+        right: 20,
+        zIndex: 10000,
+        borderRadius: '50%',
+        width: 40,
+        height: 40,
+        padding: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 18,
+        boxShadow: 'var(--shadow)'
+      }}
+      title="Toggle Theme"
+    >
+      {isLight ? '🌙' : '☀️'}
+    </button>
+  );
+}
+
+// Toast
+let toastFn=null;
+function Toast(){
+  const[toasts,setToasts]=useState([]);
+  toastFn=(msg,type='success')=>{
+    const id=Date.now();
+    setToasts(t=>[...t,{id,msg,type}]);
+    setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3000);
+  };
+  return <div style={{position:'fixed',bottom:24,right:24,zIndex:9999,display:'flex',flexDirection:'column',gap:8}}>
+    {toasts.map(t=><div key={t.id} className={`toast ${t.type}`}>{t.type==='success'?'✓ ':t.type==='error'?'✕ ':''}{t.msg}</div>)}
+  </div>;
+}
+function toast(m,t){if(toastFn)toastFn(m,t);}
+
+// Confirm Modal
+function ConfirmModal({msg,onOk,onCancel}){
+  return <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal" style={{maxWidth:400}} onClick={e=>e.stopPropagation()}>
+      <div className="modal-body" style={{textAlign:'center',padding:'32px 28px'}}>
+        <div style={{fontSize:40,marginBottom:12}}>⚠️</div>
+        <p style={{fontSize:15,marginBottom:24,color:'var(--text2)'}}>{msg}</p>
+        <div style={{display:'flex',gap:10,justifyContent:'center'}}>
+          <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+          <button className="btn btn-danger" onClick={onOk}>Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── LANDING PAGE ────────────────────────────────────────────────
+function LandingPage({ onEnter }) {
+  return (
+    <div className="landing animate-in" style={{ padding: '80px 4%', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minHeight: '100vh', boxSizing: 'border-box' }}>
+      <div className="landing-bg" />
+      <div className="grid-lines" />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        
+        {/* Subtitle */}
+        <p style={{
+          fontFamily: 'var(--font-head)',
+          fontSize: '12px',
+          letterSpacing: '4px',
+          textTransform: 'uppercase',
+          color: 'var(--accent)',
+          marginBottom: '36px',
+          fontWeight: 600,
+          textAlign: 'center'
+        }}>
+          ⚡ Welcome to the Future of Inventory
+        </p>
+
+        {/* Big Bold Balanced Logo */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          marginBottom: '32px',
+          fontFamily: 'var(--font-head)',
+          gap: '16px',
+          width: '100%',
+          textAlign: 'center'
+        }}>
+          <span style={{ 
+            fontSize: '72px', 
+            fontWeight: 900, 
+            color: '#38BDF8',
+            letterSpacing: '4px',
+            textShadow: '0 0 25px rgba(56,189,248,0.4)'
+          }}>
+            ASSET
+          </span>
+          <span style={{ 
+            fontSize: '80px', 
+            fontWeight: 900, 
+            color: '#000000',
+            WebkitTextStroke: '2px #ffffff',
+            textShadow: '0px 4px 8px rgba(0, 0, 0, 0.7)'
+          }}>
+            X
+          </span>
+        </div>
+
+        {/* Headline */}
+        <h2 style={{ 
+          textAlign: 'center', 
+          marginBottom: '24px',
+          fontFamily: 'var(--font-head)',
+          fontSize: '36px',
+          fontWeight: 700,
+          color: 'var(--text)',
+          letterSpacing: '-0.5px'
+        }}>
+          “Nothing Gets <span style={{ background: 'linear-gradient(135deg, var(--accent), var(--purple))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Lost Again.</span>”
+        </h2>
+
+        {/* Subtext Description */}
+        <p style={{ textAlign: 'center', margin: '0 auto 54px', maxWidth: '750px', color: 'var(--text2)', fontSize: '16px', lineHeight: '1.6' }}>
+          AssetX gives your business complete visibility over inventory, hardware, and operational assets.
+        </p>
+
+        {/* Gateway Selection Buttons */}
+        <div className="landing-btns" style={{ marginBottom: '80px', justifyContent: 'center', width: '100%', gap: '24px' }}>
+          <button className="btn btn-gold btn-large" onClick={() => onEnter('admin')} style={{ minWidth: '200px' }}>
+            <span>🦸</span> Admin Portal
+          </button>
+          <button className="btn btn-primary btn-large" onClick={() => onEnter('user')} style={{ minWidth: '200px' }}>
+            <span>👤</span> User Portal
+          </button>
+        </div>
+
+        {/* Broadened 6-Card Feature Grid Layout */}
+        <div className="feature-grid" style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gap: '32px', 
+          width: '100%', 
+          maxWidth: '1400px', 
+          margin: '0 auto',
+          boxSizing: 'border-box'
+        }}>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">📦</div>
+            <h3>Device Lifecycle</h3>
+            <p>Track every device from purchase to decommission with full assignment history.</p>
+          </div>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">🎫</div>
+            <h3>Smart Ticketing</h3>
+            <p>AI-powered issue tracking with priority scoring, images, and real-time status.</p>
+          </div>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">🌍</div>
+            <h3>Multi-Branch</h3>
+            <p>Manage offices across countries and states from one unified dashboard.</p>
+          </div>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">📊</div>
+            <h3>Live Analytics</h3>
+            <p>Real-time dashboards with resolution metrics, inventory health, and trends.</p>
+          </div>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">🔔</div>
+            <h3>Low Stock Alerts</h3>
+            <p>Proactive notifications when device inventory falls below threshold.</p>
+          </div>
+          <div className="feature-card" style={{ padding: '32px', height: '100%' }}>
+            <div className="feature-icon">🔐</div>
+            <h3>Role-Based Access</h3>
+            <p>Granular permissions for admins and users with secure authentication.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── AUTH PAGE ───────────────────────────────────────────────────
+// ─── UPGRADED INTERACTIVE AUTH PAGE ───────────────────────────────────
+// ─── UPGRADED INTERACTIVE AUTH PAGE ───────────────────────────────────
+function AuthPage({mode, data, onLogin}){
+  const [form, setForm] = useState({email: '', password: ''});
+  const [err, setErr] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Eye toggle state
+
+  const handleLogin = () => {
+    setErr('');
+    const all = mode === 'admin' ? data.admins : data.users;
+    const u = all.find(x => x.email === form.email && x.password === form.password && x.active);
+    if (!u) {
+      setErr('Invalid email or password. Please try again.');
+      return;
+    }
+    onLogin(u);
+    toast(`Welcome back, ${u.name}! 👋`);
+  };
+
+  const hintUsers = mode === 'admin'
+    ? [{e: 'admin@democorp.com', p: 'admin123'}, {e: 'sarah@democorp.com', p: 'admin123'}]
+    : [{e: 'priya@democorp.com', p: 'user123'}, {e: 'rahul@democorp.com', p: 'user123'}, {e: 'sofia@democorp.com', p: 'user123'}];
+
+  return (
+    <div className="auth-page">
+      <div className="auth-bg" />
+      <div className="auth-card">
+        <div style={{textAlign: 'center', marginBottom: 32}}>
+          <h2 style={{fontFamily: 'var(--font-head)', fontSize: 30, fontWeight: 800, letterSpacing: '-1px', marginBottom: 6}}>
+            {mode === 'admin' ? 'Admin Gateway' : 'Employee Access'}
+          </h2>
+          <p style={{color: 'var(--text2)', fontSize: 13, fontWeight: 400}}>NexusDesk — Service Inventory Platform</p>
+        </div>
+        
+        <div className="card auth-card-premium" style={{padding: '36px', background: 'var(--bg2)'}}>
+          <div className="flex-col" style={{gap: '4px'}}>
+            
+            {/* Interactive Email Field */}
+            <div className="form-group">
+              <input 
+                className="floating-inp" 
+                type="email" 
+                placeholder=" " 
+                value={form.email} 
+                onChange={e => setForm({...form, email: e.target.value})} 
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              />
+              <label className="floating-lbl">Email Address</label>
+            </div>
+
+            {/* Interactive Password Field + Eyeball Toggle */}
+            <div className="form-group" style={{marginBottom: '24px'}}>
+              <input 
+                className="floating-inp" 
+                type={showPassword ? "text" : "password"} 
+                placeholder=" " 
+                value={form.password} 
+                onChange={e => setForm({...form, password: e.target.value})} 
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                style={{paddingRight: '48px'}}
+              />
+              <label className="floating-lbl">Account Password</label>
+              <button 
+                type="button"
+                className="pass-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide Password" : "Show Password"}
+              >
+                {showPassword ? '👁️' : '🙈'}
+              </button>
+            </div>
+
+            {err && (
+              <div style={{
+                color: 'var(--red)', 
+                fontSize: 13, 
+                background: 'rgba(239,68,68,.08)', 
+                padding: '12px 14px', 
+                borderRadius: 'var(--r2)', 
+                border: '1px solid rgba(239,68,68,.15)',
+                marginBottom: '16px',
+                animation: 'slideUp 0.2s ease'
+              }}>
+                {err}
+              </div>
+            )}
+
+            <button 
+              className={`btn ${mode === 'admin' ? 'btn-gold' : 'btn-primary'}`} 
+              style={{width: '100%', justifyContent: 'center', padding: '14px', fontSize: '14px', borderRadius: 'var(--r2)'}} 
+              onClick={handleLogin}
+            >
+              Secure Sign In
+            </button>
+          </div>
+
+          <hr className="divider" style={{margin: '24px 0 20px'}} />
+
+          {/* Quick Click Credentials Tool */}
+          <div style={{background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)', padding: '16px', fontSize: 12}}>
+            <p style={{marginBottom: 10, fontWeight: 600, color: 'var(--text2)', letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '10.5px'}}>
+              ⚡ Quick-Fill Mock Accounts:
+            </p>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
+              {hintUsers.map((h, i) => (
+                <div 
+                  key={i} 
+                  style={{
+                    cursor: 'pointer', 
+                    padding: '8px 10px', 
+                    color: 'var(--text2)',
+                    background: 'var(--surface2)',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border)',
+                    transition: 'all 0.2s'
+                  }} 
+                  className="flex-gap"
+                  onClick={() => setForm({email: h.e, password: h.p})}
+                >
+                  <span>📧</span> <code>{h.e}</code>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        <p style={{textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--text3)'}}>
+          Protected by enterprise-grade token security • v2.0
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── BITMOJI PICKER ─────────────────────────────────────────────
+function BitmojiPicker({selected,onSelect}){
+  return <div>
+    <label className="lbl">Choose Avatar</label>
+    <div className="bitmoji-grid">
+      {BITMOJIS.map(b=><div key={b} className={`bitmoji-opt ${selected===b?'selected':''}`} onClick={()=>onSelect(b)}>{b}</div>)}
+    </div>
+  </div>;
+}
+
+// ─── SIDEBAR ────────────────────────────────────────────────────
+function Sidebar({user,items,active,onChange,onLogout}){
+  return <div className="sidebar">
+    <div className="brand"><div className="brand-dot"/>AssetX</div>
+    <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px',background:'var(--surface)',borderRadius:'var(--r)',marginBottom:16}}>
+      <div className="avatar">{user.bitmoji||'😀'}</div>
+      <div style={{overflow:'hidden'}}>
+        <p style={{fontSize:13,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{user.name}</p>
+        <p style={{fontSize:11,color:'var(--text3)'}}>{user.role==='admin'?'Administrator':'Team Member'}</p>
+      </div>
+    </div>
+    {items.map(item=>'divider'===item.id
+      ?<hr key={item.id+'_d'} className="divider" style={{margin:'8px 0'}}/>
+      :<div key={item.id} className={`nav-item ${active===item.id?'active':''}`} onClick={()=>onChange(item.id)}>
+        <span style={{fontSize:17}}>{item.icon}</span>{item.label}
+        {item.badge?<span className="notif-badge" style={{marginLeft:'auto'}}>{item.badge}</span>:null}
+      </div>
+    )}
+    <div style={{marginTop:'auto'}}>
+      <div className="nav-item" style={{color:'var(--red)'}} onClick={onLogout}>
+        <span>🚪</span> Logout
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── STAT CARDS ─────────────────────────────────────────────────
+function StatCard({label,value,icon,color,sub}){
+  return <div className={`stat-card ${color}`}>
+    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+      <div>
+        <div className="stat-num">{value}</div>
+        <div className="stat-label">{label}</div>
+        {sub&&<div style={{fontSize:12,color:'var(--text3)',marginTop:6}}>{sub}</div>}
+      </div>
+      <span style={{fontSize:28}}>{icon}</span>
+    </div>
+  </div>;
+}
+
+// ─── BAR CHART ──────────────────────────────────────────────────
+function BarChart({data,colors}){
+  const max=Math.max(...data.map(d=>d.value),1);
+  return <div className="bar-chart">
+    {data.map((d,i)=><div key={i} className="bar-row">
+      <div className="bar-label">{d.label}</div>
+      <div className="bar-track">
+        <div className="bar-fill" style={{width:`${(d.value/max)*100}%`,background:colors[i%colors.length]}}>
+          {d.value>0&&<span>{d.value}</span>}
+        </div>
+      </div>
+      <span style={{fontSize:12,color:'var(--text2)',width:28,textAlign:'right'}}>{d.value}</span>
+    </div>)}
+  </div>;
+}
+
+// ─── DONUT CHART (SVG) ──────────────────────────────────────────
+function DonutChart({data}){
+  const total=data.reduce((s,d)=>s+d.value,0)||1;
+  let cum=0;
+  const r=50,cx=60,cy=60,stroke=18;
+  const slices=data.map(d=>{
+    const pct=d.value/total;
+    const start=cum;
+    cum+=pct;
+    const a1=2*Math.PI*start-Math.PI/2;
+    const a2=2*Math.PI*(start+pct)-Math.PI/2;
+    const laf=pct>0.5?1:0;
+    const x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+    const x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+    return{...d,d:`M ${x1} ${y1} A ${r} ${r} 0 ${laf} 1 ${x2} ${y2}`};
+  });
+  return <div className="donut-wrap">
+    <svg width={120} height={120}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--surface2)" strokeWidth={stroke}/>
+      {slices.map((s,i)=><path key={i} d={s.d} fill="none" stroke={s.color} strokeWidth={stroke} strokeLinecap="round"/>)}
+      <text x={cx} y={cy+5} textAnchor="middle" fontSize={13} fontWeight="600" fill="var(--text)">{total}</text>
+    </svg>
+    <div className="donut-legend">
+      {data.map((d,i)=><div key={i} className="donut-leg-item">
+        <div className="donut-dot" style={{background:d.color}}/>
+        <span style={{color:'var(--text2)'}}>{d.label}</span>
+        <span style={{fontWeight:500}}>{d.value}</span>
+      </div>)}
+    </div>
+  </div>;
+}
+
+// ─── IMAGE UPLOAD ────────────────────────────────────────────────
+function ImageUpload({images,onChange}){
+  const inputRef=useRef();
+  const handleFile=e=>{
+    const files=Array.from(e.target.files);
+    files.forEach(f=>{
+      const reader=new FileReader();
+      reader.onload=ev=>onChange([...images,{name:f.name,url:ev.target.result}]);
+      reader.readAsDataURL(f);
+    });
+  };
+  return <div>
+    <label className="lbl">Attach Images (optional)</label>
+    <div className="file-drop" onClick={()=>inputRef.current.click()}>
+      <div>📎 Click to upload images</div>
+      <div style={{fontSize:12,marginTop:4}}>PNG, JPG, GIF up to 5MB each</div>
+    </div>
+    <input ref={inputRef} type="file" accept="image/*" multiple style={{display:'none'}} onChange={handleFile}/>
+    {images.length>0&&<div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:10}}>
+      {images.map((img,i)=><div key={i} style={{position:'relative'}}>
+        <img src={img.url} alt={img.name} style={{width:80,height:80,objectFit:'cover',borderRadius:'var(--r2)',border:'1px solid var(--border)'}}/>
+        <button onClick={()=>onChange(images.filter((_,j)=>j!==i))} style={{position:'absolute',top:-6,right:-6,background:'var(--red)',border:'none',borderRadius:'50%',width:18,height:18,cursor:'pointer',color:'#fff',fontSize:11,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+      </div>)}
+    </div>}
+  </div>;
+}
+
+// ─── ADD USER/ADMIN MODAL ────────────────────────────────────────
+function AddUserModal({data,type,onSave,onClose}){
+  const[form,setForm]=useState({name:'',email:'',password:'',department:'',designation:'',doj:'',branch:data.company.branches[0]?.id||'',phone:'',employeeId:'',bitmoji:'😀',active:true});
+  const[step,setStep]=useState(1);
+  const f=v=>setForm(p=>({...p,...v}));
+  const isAdmin=type==='admin';
+  const pw=form.name?form.name.split(' ')[0].toLowerCase()+(Math.floor(Math.random()*900)+100):generateId().toLowerCase();
+
+  const save=()=>{
+    if(!form.name||!form.email){toast('Please fill required fields.','error');return;}
+    const id=(isAdmin?'ADM':'USR')+generateId();
+    const record={...form,id,role:isAdmin?'admin':'user',password:form.password||pw};
+    if(isAdmin)onSave({...data,admins:[...data.admins,record]});
+    else onSave({...data,users:[...data.users,record]});
+    toast(`${isAdmin?'Admin':'User'} "${form.name}" created successfully!`);
+    onClose();
+  };
+
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head">
+        <div className="flex-between">
+          <h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>
+            {isAdmin?'➕ Add New Admin':'➕ Add New User'}
+          </h2>
+          <div style={{display:'flex',gap:8}}>
+            <div style={{width:28,height:28,borderRadius:'50%',background:step>=1?'var(--accent)':'var(--surface2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600}}>1</div>
+            <div style={{width:28,height:28,borderRadius:'50%',background:step>=2?'var(--accent)':'var(--surface2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600}}>2</div>
+          </div>
+        </div>
+      </div>
+      <div className="modal-body">
+        {step===1?<>
+          <div className="grid-2">
+            <div><label className="lbl">Full Name *</label><input className="inp" value={form.name} onChange={e=>f({name:e.target.value})} placeholder="John Smith"/></div>
+            <div><label className="lbl">Email *</label><input className="inp" type="email" value={form.email} onChange={e=>f({email:e.target.value})} placeholder="john@company.com"/></div>
+            <div><label className="lbl">Password</label><input className="inp" value={form.password} onChange={e=>f({password:e.target.value})} placeholder={`Auto: ${pw}`}/></div>
+            <div><label className="lbl">Employee ID</label><input className="inp" value={form.employeeId} onChange={e=>f({employeeId:e.target.value})} placeholder="EMP001"/></div>
+            <div><label className="lbl">Department</label><input className="inp" value={form.department} onChange={e=>f({department:e.target.value})} placeholder="Engineering"/></div>
+            <div><label className="lbl">Designation</label><input className="inp" value={form.designation} onChange={e=>f({designation:e.target.value})} placeholder="Sr. Engineer"/></div>
+            <div><label className="lbl">Date of Joining</label><input className="inp" type="date" value={form.doj} onChange={e=>f({doj:e.target.value})}/></div>
+            <div><label className="lbl">Phone</label><input className="inp" value={form.phone} onChange={e=>f({phone:e.target.value})} placeholder="+91 98765 43210"/></div>
+            <div style={{gridColumn:'1/-1'}}><label className="lbl">Branch</label>
+              <select className="inp" value={form.branch} onChange={e=>f({branch:e.target.value})}>
+                {data.company.branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+          </div>
+        </>:<BitmojiPicker selected={form.bitmoji} onSelect={b=>f({bitmoji:b})}/>}
+      </div>
+      <div className="modal-foot">
+        {step===2&&<button className="btn btn-ghost" onClick={()=>setStep(1)}>← Back</button>}
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        {step===1?<button className="btn btn-primary" onClick={()=>setStep(2)}>Next → Avatar</button>
+          :<button className="btn btn-primary" onClick={save}>Create {isAdmin?'Admin':'User'}</button>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── ADD DEVICE MODAL ────────────────────────────────────────────
+function AddDeviceModal({data,device,onSave,onClose}){
+  const[form,setForm]=useState(device||{name:'',type:'Laptop',brand:'',model:'',serial:'',color:'',buyDate:'',warranty:'',warrantyCard:'',status:'Available',assignedTo:'',branch:data.company.branches[0]?.id||'',price:'',notes:''});
+  const f=v=>setForm(p=>({...p,...v}));
+  const save=()=>{
+    if(!form.name||!form.serial){toast('Name and Serial Number are required.','error');return;}
+    if(device){
+      const devs=data.devices.map(d=>d.id===device.id?{...d,...form}:d);
+      onSave({...data,devices:devs});
+      toast('Device updated!');
+    }else{
+      const id='DEV'+generateId();
+      const newDev={...form,id,history:[]};
+      onSave({...data,devices:[...data.devices,newDev]});
+      toast('Device added to inventory!');
+    }
+    onClose();
+  };
+  const allUsers=[...data.users,...data.admins];
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>{device?'✏️ Edit Device':'📦 Add New Device'}</h2></div>
+      <div className="modal-body">
+        <div className="grid-2">
+          <div><label className="lbl">Device Name *</label><input className="inp" value={form.name} onChange={e=>f({name:e.target.value})} placeholder="MacBook Pro 16&quot;"/></div>
+          <div><label className="lbl">Type</label><select className="inp" value={form.type} onChange={e=>f({type:e.target.value})}>{DEVICE_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+          <div><label className="lbl">Brand</label><input className="inp" value={form.brand} onChange={e=>f({brand:e.target.value})} placeholder="Apple"/></div>
+          <div><label className="lbl">Model</label><input className="inp" value={form.model} onChange={e=>f({model:e.target.value})} placeholder="MacBook Pro M3"/></div>
+          <div><label className="lbl">Serial Number *</label><input className="inp" value={form.serial} onChange={e=>f({serial:e.target.value})} placeholder="MBP2024X001"/></div>
+          <div><label className="lbl">Color</label><input className="inp" value={form.color} onChange={e=>f({color:e.target.value})} placeholder="Space Gray"/></div>
+          <div><label className="lbl">Purchase Date</label><input className="inp" type="date" value={form.buyDate} onChange={e=>f({buyDate:e.target.value})}/></div>
+          <div><label className="lbl">Warranty Expiry</label><input className="inp" type="date" value={form.warranty} onChange={e=>f({warranty:e.target.value})}/></div>
+          <div><label className="lbl">Warranty Card No.</label><input className="inp" value={form.warrantyCard} onChange={e=>f({warrantyCard:e.target.value})} placeholder="WC-APPLE-001"/></div>
+          <div><label className="lbl">Price (₹)</label><input className="inp" type="number" value={form.price} onChange={e=>f({price:e.target.value})} placeholder="185000"/></div>
+          <div><label className="lbl">Status</label><select className="inp" value={form.status} onChange={e=>f({status:e.target.value})}>
+            <option>Available</option><option>Assigned</option><option>Under Repair</option><option>Retired</option>
+          </select></div>
+          <div><label className="lbl">Branch</label><select className="inp" value={form.branch} onChange={e=>f({branch:e.target.value})}>
+            {data.company.branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}
+          </select></div>
+          {form.status==='Assigned'&&<div style={{gridColumn:'1/-1'}}><label className="lbl">Assign To</label><select className="inp" value={form.assignedTo} onChange={e=>f({assignedTo:e.target.value})}>
+            <option value="">— Select User —</option>
+            {allUsers.map(u=><option key={u.id} value={u.id}>{u.name} ({u.department})</option>)}
+          </select></div>}
+          <div style={{gridColumn:'1/-1'}}><label className="lbl">Notes</label><textarea className="inp inp-area" value={form.notes} onChange={e=>f({notes:e.target.value})} placeholder="Additional notes..."/></div>
+        </div>
+      </div>
+      <div className="modal-foot">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={save}>{device?'Update Device':'Add Device'}</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── TICKET MODAL ────────────────────────────────────────────────
+function TicketModal({data,ticket,currentUser,onSave,onClose}){
+  const isAdmin=currentUser.role==='admin';
+  const[comment,setComment]=useState('');
+  const allUsers=[...data.users,...data.admins];
+  const raiser=allUsers.find(u=>u.id===ticket.raisedBy);
+  const resolver=ticket.resolvedBy?allUsers.find(u=>u.id===ticket.resolvedBy):null;
+  const device=data.devices.find(d=>d.id===ticket.device);
+
+  const addComment=()=>{
+    if(!comment.trim())return;
+    const updated={...ticket,comments:[...ticket.comments,{by:currentUser.id,text:comment,date:new Date().toISOString()}]};
+    const tickets=data.tickets.map(t=>t.id===ticket.id?updated:t);
+    onSave({...data,tickets});
+    setComment('');
+    toast('Comment added!');
+  };
+
+  const changeStatus=st=>{
+    const updated={...ticket,status:st,...(st==='Resolved'?{resolvedBy:currentUser.id,resolvedDate:new Date().toISOString()}:{})};
+    const tickets=data.tickets.map(t=>t.id===ticket.id?updated:t);
+    onSave({...data,tickets});
+    toast(`Ticket marked as ${st}`);
+  };
+
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head">
+        <div className="flex-between" style={{flexWrap:'wrap',gap:8}}>
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <h2 style={{fontFamily:'var(--font-head)',fontSize:18,fontWeight:700}}>{ticket.title}</h2>
+            </div>
+            <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
+              <span className={`tag tag-${ticket.status.toLowerCase().replace(' ','-')}`}>{ticket.status}</span>
+              <span className={`tag tag-${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
+              <span className="chip">#{ticket.id}</span>
+            </div>
+          </div>
+          {isAdmin&&ticket.status!=='Resolved'&&<div style={{display:'flex',gap:8}}>
+            {ticket.status==='Open'&&<button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>changeStatus('In Progress')}>▶ Start</button>}
+            <button className="btn btn-primary" style={{fontSize:12}} onClick={()=>changeStatus('Resolved')}>✓ Resolve</button>
+          </div>}
+        </div>
+      </div>
+      <div className="modal-body" style={{display:'flex',flexDirection:'column',gap:18}}>
+        <div className="grid-2">
+          <div className="card" style={{padding:14}}>
+            <p style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.4px',marginBottom:8}}>Ticket Info</p>
+            <div style={{display:'flex',flexDirection:'column',gap:6,fontSize:13}}>
+              <div className="flex-between"><span style={{color:'var(--text2)'}}>Category</span><span>{ticket.category}</span></div>
+              <div className="flex-between"><span style={{color:'var(--text2)'}}>Raised On</span><span>{fmtDate(ticket.raisedDate)}</span></div>
+              <div className="flex-between"><span style={{color:'var(--text2)'}}>Device</span><span>{device?.name||'—'}</span></div>
+              {resolver&&<div className="flex-between"><span style={{color:'var(--text2)'}}>Resolved By</span><span>{resolver.name}</span></div>}
+              {ticket.resolvedDate&&<div className="flex-between"><span style={{color:'var(--text2)'}}>Resolved On</span><span>{fmtDate(ticket.resolvedDate)}</span></div>}
+            </div>
+          </div>
+          <div className="card" style={{padding:14}}>
+            <p style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.4px',marginBottom:8}}>Raised By</p>
+            {raiser&&<div className="flex-gap">
+              <div className="avatar avatar-sm">{raiser.bitmoji}</div>
+              <div>
+                <p style={{fontWeight:500,fontSize:13}}>{raiser.name}</p>
+                <p style={{fontSize:11,color:'var(--text3)'}}>{raiser.department} • {raiser.designation}</p>
+              </div>
+            </div>}
+          </div>
+        </div>
+        <div>
+          <p style={{fontSize:12,color:'var(--text2)',marginBottom:8}}>Description</p>
+          <p style={{fontSize:13.5,lineHeight:1.6,color:'var(--text)'}}>{ticket.description}</p>
+        </div>
+        {ticket.images?.length>0&&<div>
+          <p style={{fontSize:12,color:'var(--text2)',marginBottom:8}}>Attached Images</p>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {ticket.images.map((img,i)=><img key={i} src={img.url} alt={img.name} style={{height:90,borderRadius:'var(--r2)',border:'1px solid var(--border)',cursor:'pointer'}} onClick={()=>window.open(img.url)}/>)}
+          </div>
+        </div>}
+        {ticket.resolutionNote&&<div style={{background:'rgba(34,197,94,.08)',border:'1px solid rgba(34,197,94,.2)',borderRadius:'var(--r2)',padding:'12px 14px'}}>
+          <p style={{fontSize:11,color:'#4ade80',marginBottom:4}}>RESOLUTION NOTE</p>
+          <p style={{fontSize:13}}>{ticket.resolutionNote}</p>
+        </div>}
+        <hr className="divider"/>
+        <div>
+          <p style={{fontSize:13,fontWeight:500,marginBottom:12}}>Comments ({ticket.comments.length})</p>
+          {ticket.comments.map((c,i)=>{
+            const u=allUsers.find(x=>x.id===c.by);
+            return <div key={i} style={{display:'flex',gap:10,marginBottom:14}}>
+              <div className="avatar avatar-sm">{u?.bitmoji||'?'}</div>
+              <div style={{flex:1}}>
+                <div className="flex-between" style={{marginBottom:4}}>
+                  <span style={{fontSize:12,fontWeight:500}}>{u?.name||'Unknown'}</span>
+                  <span style={{fontSize:11,color:'var(--text3)'}}>{fmtDate(c.date)}</span>
+                </div>
+                <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.5}}>{c.text}</p>
+              </div>
+            </div>;
+          })}
+          {ticket.comments.length===0&&<p style={{fontSize:13,color:'var(--text3)'}}>No comments yet.</p>}
+          <div style={{display:'flex',gap:10,marginTop:14}}>
+            <input className="inp" value={comment} onChange={e=>setComment(e.target.value)} placeholder="Add a comment..." onKeyDown={e=>e.key==='Enter'&&addComment()}/>
+            <button className="btn btn-primary" onClick={addComment}>Send</button>
+          </div>
+        </div>
+      </div>
+      <div className="modal-foot">
+        <button className="btn btn-ghost" onClick={onClose}>Close</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── NEW TICKET MODAL ────────────────────────────────────────────
+function NewTicketModal({data,currentUser,onSave,onClose}){
+  const myDevices=data.devices.filter(d=>d.assignedTo===currentUser.id);
+  const[form,setForm]=useState({title:'',category:'Hardware Failure',priority:'Medium',description:'',device:myDevices[0]?.id||'',images:[]});
+  const f=v=>setForm(p=>({...p,...v}));
+  const save=()=>{
+    if(!form.title||!form.description){toast('Please fill in title and description.','error');return;}
+    const id='TKT'+generateId();
+    const ticket={...form,id,status:'Open',raisedBy:currentUser.id,raisedDate:new Date().toISOString(),resolvedBy:null,resolvedDate:null,resolutionNote:null,comments:[],branch:currentUser.branch};
+    onSave({...data,tickets:[...data.tickets,ticket]});
+    toast('Ticket raised successfully! 🎫');
+    onClose();
+  };
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal modal-lg" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>🎫 Raise New Ticket</h2></div>
+      <div className="modal-body">
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          <div><label className="lbl">Issue Title *</label><input className="inp" value={form.title} onChange={e=>f({title:e.target.value})} placeholder="Brief description of the issue"/></div>
+          <div className="grid-2">
+            <div><label className="lbl">Category</label><select className="inp" value={form.category} onChange={e=>f({category:e.target.value})}>{ISSUE_CATEGORIES.map(c=><option key={c}>{c}</option>)}</select></div>
+            <div><label className="lbl">Priority</label><select className="inp" value={form.priority} onChange={e=>f({priority:e.target.value})}>{PRIORITIES.map(p=><option key={p}>{p}</option>)}</select></div>
+          </div>
+          <div><label className="lbl">Related Device</label><select className="inp" value={form.device} onChange={e=>f({device:e.target.value})}>
+            <option value="">— Not device specific —</option>
+            {myDevices.map(d=><option key={d.id} value={d.id}>{d.name} ({d.serial})</option>)}
+          </select></div>
+          <div><label className="lbl">Description *</label><textarea className="inp inp-area" style={{minHeight:120}} value={form.description} onChange={e=>f({description:e.target.value})} placeholder="Describe the issue in detail — when it started, what you've tried, error messages..."/></div>
+          <ImageUpload images={form.images} onChange={imgs=>f({images:imgs})}/>
+        </div>
+      </div>
+      <div className="modal-foot">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={save}>Submit Ticket</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── ASSIGN DEVICE MODAL ─────────────────────────────────────────
+function AssignDeviceModal({data,device,onSave,onClose}){
+  const[userId,setUserId]=useState('');
+  const allUsers=[...data.users,...data.admins];
+  const unassign=()=>{
+    const devs=data.devices.map(d=>{
+      if(d.id!==device.id)return d;
+      const history=d.history.map(h=>h.user===d.assignedTo&&!h.to?{...h,to:now()}:h);
+      return{...d,status:'Available',assignedTo:null,assignedDate:null,history};
+    });
+    onSave({...data,devices:devs});
+    toast('Device unassigned.');
+    onClose();
+  };
+  const assign=()=>{
+    if(!userId){toast('Please select a user.','error');return;}
+    const devs=data.devices.map(d=>{
+      if(d.id!==device.id)return d;
+      const history=[...d.history.map(h=>h.user===d.assignedTo&&!h.to?{...h,to:now()}:h),{user:userId,from:now(),to:null}];
+      return{...d,status:'Assigned',assignedTo:userId,assignedDate:now(),history};
+    });
+    onSave({...data,devices:devs});
+    const u=allUsers.find(x=>x.id===userId);
+    toast(`Device assigned to ${u?.name}!`);
+    onClose();
+  };
+  return <div className="modal-overlay" onClick={onClose}>
+    <div className="modal" onClick={e=>e.stopPropagation()}>
+      <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>🔗 Assign Device</h2></div>
+      <div className="modal-body">
+        <div className="card" style={{padding:14,marginBottom:16}}>
+          <p style={{fontWeight:500}}>{device.name}</p>
+          <p style={{fontSize:12,color:'var(--text3)'}}>S/N: {device.serial} • {device.type}</p>
+        </div>
+        <label className="lbl">Assign To</label>
+        <select className="inp" value={userId} onChange={e=>setUserId(e.target.value)}>
+          <option value="">— Select User —</option>
+          {allUsers.map(u=><option key={u.id} value={u.id}>{u.name} — {u.department} ({u.role})</option>)}
+        </select>
+        {device.assignedTo&&<div style={{marginTop:14,background:'rgba(239,68,68,.08)',border:'1px solid rgba(239,68,68,.2)',borderRadius:'var(--r2)',padding:'12px 14px'}}>
+          <p style={{fontSize:12,color:'var(--text2)'}}>Currently assigned to: <strong>{allUsers.find(u=>u.id===device.assignedTo)?.name}</strong></p>
+          <button className="btn btn-danger" style={{marginTop:8,fontSize:12}} onClick={unassign}>Unassign Device</button>
+        </div>}
+      </div>
+      <div className="modal-foot">
+        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={assign}>Assign</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── ADMIN DASHBOARD ─────────────────────────────────────────────
+function AdminDashboard({data,currentUser}){
+  const tickets=data.tickets;
+  const devices=data.devices;
+  const open=tickets.filter(t=>t.status==='Open').length;
+  const inprog=tickets.filter(t=>t.status==='In Progress').length;
+  const resolved=tickets.filter(t=>t.status==='Resolved').length;
+  const critical=tickets.filter(t=>t.priority==='Critical'&&t.status!=='Resolved').length;
+  const available=devices.filter(d=>d.status==='Available').length;
+  const assigned=devices.filter(d=>d.status==='Assigned').length;
+  const expiring=devices.filter(d=>{if(!d.warranty)return false;const exp=new Date(d.warranty);const diff=(exp-new Date())/(1000*60*60*24*30);return diff>0&&diff<3;}).length;
+
+  const resolverCounts={};
+  tickets.filter(t=>t.resolvedBy).forEach(t=>{resolverCounts[t.resolvedBy]=(resolverCounts[t.resolvedBy]||0)+1;});
+  const topAdmins=[...data.admins].map(a=>({label:a.name,value:resolverCounts[a.id]||0})).sort((a,b)=>b.value-a.value);
+  const categoryData=ISSUE_CATEGORIES.map(c=>({label:c,value:tickets.filter(t=>t.category===c).length})).filter(x=>x.value>0);
+  const branchTickets=data.company.branches.map(b=>({label:b.name.split('—')[0].trim(),value:tickets.filter(t=>t.branch===b.id).length}));
+  const recentTickets=tickets.slice().sort((a,b)=>new Date(b.raisedDate)-new Date(a.raisedDate)).slice(0,5);
+  const allUsers=[...data.users,...data.admins];
+  return <div>
+    <div className="topbar">
+      <div><div className="section-head">Dashboard Overview</div><div className="section-sub">Welcome back, {currentUser.name} • {today()}</div></div>
+      {critical>0&&<div style={{background:'rgba(239,68,68,.12)',border:'1px solid rgba(239,68,68,.3)',borderRadius:'var(--r)',padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+        <span className="pulse">🔴</span><span style={{color:'#f87171',fontSize:13,fontWeight:500}}>{critical} Critical ticket{critical>1?'s':''} need attention</span>
+      </div>}
+    </div>
+    <div className="grid-4" style={{marginBottom:24}}>
+      <StatCard label="Open Tickets" value={open} icon="🎫" color="blue" sub={`${inprog} in progress`}/>
+      <StatCard label="Resolved" value={resolved} icon="✅" color="green" sub="All time"/>
+      <StatCard label="Devices Assigned" value={assigned} icon="💻" color="purple" sub={`${available} available`}/>
+      <StatCard label="Warranty Expiring" value={expiring} icon="⚠️" color="gold" sub="Within 3 months"/>
+    </div>
+    {/* Change gridTemplateColumns to '1fr 1fr' for equal sizing */}
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:24}}> 
+      <div className="card" style={{padding:20}}> 
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Ticket Status Distribution</p> 
+        <DonutChart data={[ 
+          {label:'Open',value:open,color:'var(--accent)'}, 
+          {label:'In Progress',value:inprog,color:'var(--gold)'}, 
+          {label:'Resolved',value:resolved,color:'var(--green)'}, 
+        ]}/> 
+      </div> 
+      <div className="card" style={{padding:20}}> 
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Device Status</p> 
+        <DonutChart data={[ 
+          {label:'Assigned',value:assigned,color:'var(--purple)'}, 
+          {label:'Available',value:available,color:'var(--accent)'}, 
+          {label:'Under Repair',value:devices.filter(d=>d.status==='Under Repair').length,color:'var(--orange)'}, 
+        ]}/> 
+      </div> 
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,marginBottom:24}}>
+      <div className="card" style={{padding:20}}>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Tickets by Category</p>
+        <BarChart data={categoryData.slice(0,6)} colors={['var(--accent)','var(--gold)','var(--green)','var(--purple)','var(--orange)','var(--red)']}/>
+      </div>
+      <div className="card" style={{padding:20}}>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Resolutions by Admin</p>
+        <BarChart data={topAdmins} colors={['var(--gold)','var(--accent)','var(--green)']}/>
+      </div>
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+      <div className="card" style={{padding:20}}>
+        <div className="flex-between" style={{marginBottom:16}}>
+          <p style={{fontFamily:'var(--font-head)',fontWeight:700}}>Recent Tickets</p>
+        </div>
+        {recentTickets.length===0&&<div className="empty-state"><div>🎉</div><p>All clear! No tickets.</p></div>}
+        {recentTickets.map(t=>{
+          const u=allUsers.find(x=>x.id===t.raisedBy);
+          return <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid var(--border)'}}>
+            <div className="avatar avatar-sm">{u?.bitmoji||'?'}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{fontSize:13,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{t.title}</p>
+              <p style={{fontSize:11,color:'var(--text3)'}}>{u?.name} • {fmtDate(t.raisedDate)}</p>
+            </div>
+            <span className={`tag tag-${t.status.toLowerCase().replace(' ','-')}`}>{t.status}</span>
+          </div>;
+        })}
+      </div>
+      <div className="card" style={{padding:20}}>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Branch Activity</p>
+        <BarChart data={branchTickets} colors={['var(--accent)','var(--gold)','var(--green)','var(--purple)']}/>
+        <hr className="divider"/>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:12}}>Quick Inventory</p>
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {DEVICE_TYPES.slice(0,5).map(t=>{
+            const cnt=devices.filter(d=>d.type===t).length;
+            if(!cnt)return null;
+            return <div key={t} className="flex-between" style={{fontSize:13}}>
+              <span style={{color:'var(--text2)'}}>{t}</span>
+              <span style={{fontWeight:500}}>{cnt}</span>
+            </div>;
+          })}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── ADMIN TICKETS ───────────────────────────────────────────────
+function AdminTickets({data,currentUser,onSave}){
+  const[filter,setFilter]=useState('All');
+  const[search,setSearch]=useState('');
+  const[selected,setSelected]=useState(null);
+  const allUsers=[...data.users,...data.admins];
+  const filtered=data.tickets.filter(t=>{
+    const matchStatus=filter==='All'||t.status===filter;
+    const matchSearch=!search||t.title.toLowerCase().includes(search.toLowerCase())||t.id.includes(search.toUpperCase());
+    return matchStatus&&matchSearch;
+  }).sort((a,b)=>new Date(b.raisedDate)-new Date(a.raisedDate));
+  const priIcon={Critical:'🔴',High:'🟠',Medium:'🟡',Low:'🟢'};
+  return <div>
+    <div className="topbar"><div><div className="section-head">All Tickets</div><div className="section-sub">Manage and resolve support tickets across all branches</div></div></div>
+    <div className="flex-between" style={{marginBottom:16,flexWrap:'wrap',gap:12}}>
+      <div style={{display:'flex',gap:8}}>
+        {['All','Open','In Progress','Resolved'].map(s=><button key={s} className={`btn ${filter===s?'btn-primary':'btn-ghost'}`} style={{fontSize:12,padding:'7px 14px'}} onClick={()=>setFilter(s)}>{s}</button>)}
+      </div>
+      <div className="search-wrap">
+        <span className="search-icon">🔍</span>
+        <input className="search-inp" placeholder="Search tickets..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+    </div>
+    {filtered.length===0&&<div className="empty-state card" style={{padding:60}}><div className="icon">🎫</div><h3>No tickets found</h3><p>Try adjusting your filters</p></div>}
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {filtered.map(t=>{
+        const u=allUsers.find(x=>x.id===t.raisedBy);
+        const dev=data.devices.find(d=>d.id===t.device);
+        const branch=data.company.branches.find(b=>b.id===t.branch);
+        return <div key={t.id} className="ticket-row" onClick={()=>setSelected(t)}>
+          <div style={{flex:1,minWidth:0}}>
+            <div className="flex-gap" style={{marginBottom:4}}>
+              <span style={{fontSize:14}}>{priIcon[t.priority]}</span>
+              <p style={{fontWeight:500,fontSize:14,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.title}</p>
+            </div>
+            <div style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+              {u&&<span style={{fontSize:12,color:'var(--text2)',display:'flex',alignItems:'center',gap:4}}>{u.bitmoji} {u.name}</span>}
+              {dev&&<span style={{fontSize:11,color:'var(--text3)'}}>• {dev.name}</span>}
+              {branch&&<span style={{fontSize:11,color:'var(--text3)'}}>• {branch.name}</span>}
+              <span style={{fontSize:11,color:'var(--text3)'}}>• {fmtDate(t.raisedDate)}</span>
+            </div>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+            <span className={`tag tag-${t.status.toLowerCase().replace(' ','-')}`}>{t.status}</span>
+            <span className="chip">#{t.id}</span>
+          </div>
+        </div>;
+      })}
+    </div>
+    {selected&&<TicketModal data={data} ticket={selected} currentUser={currentUser} onSave={d=>{onSave(d);setSelected(data.tickets.find(t=>t.id===selected.id));}} onClose={()=>setSelected(null)}/>}
+  </div>;
+}
+
+// ─── ADMIN DEVICES ───────────────────────────────────────────────
+function AdminDevices({data,currentUser,onSave}){
+  const[search,setSearch]=useState('');
+  const[filter,setFilter]=useState('All');
+  const[showAdd,setShowAdd]=useState(false);
+  const[editing,setEditing]=useState(null);
+  const[assigning,setAssigning]=useState(null);
+  const[viewHistory,setViewHistory]=useState(null);
+  const[confirm,setConfirm]=useState(null);
+  const allUsers=[...data.users,...data.admins];
+  const filtered=data.devices.filter(d=>{
+    const matchStatus=filter==='All'||d.status===filter;
+    const matchSearch=!search||d.name.toLowerCase().includes(search.toLowerCase())||d.serial.toLowerCase().includes(search.toLowerCase())||d.brand?.toLowerCase().includes(search.toLowerCase());
+    return matchStatus&&matchSearch;
+  });
+  const deleteDevice=id=>{
+    setConfirm({msg:'Delete this device permanently?',ok:()=>{onSave({...data,devices:data.devices.filter(d=>d.id!==id)});toast('Device deleted.');setConfirm(null);}});
+  };
+  const typeIcon={Laptop:'💻',Desktop:'🖥️',Monitor:'🖵',Printer:'🖨️',Scanner:'📠',Phone:'📱',Tablet:'📟',Server:'🗄️',Router:'📡',Switch:'🔀',UPS:'🔋',Camera:'📷',Projector:'📽️',Other:'📦'};
+  const isExpiringSoon=d=>{if(!d.warranty)return false;const diff=(new Date(d.warranty)-new Date())/(1000*60*60*24*30);return diff>0&&diff<3;};
+  const isExpired=d=>{if(!d.warranty)return false;return new Date(d.warranty)<new Date();};
+  return <div>
+    <div className="topbar">
+      <div><div className="section-head">Device Inventory</div><div className="section-sub">Manage all company devices, assignments, and warranty tracking</div></div>
+      <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Device</button>
+    </div>
+    <div className="flex-between" style={{marginBottom:16,flexWrap:'wrap',gap:12}}>
+      <div style={{display:'flex',gap:8}}>
+        {['All','Available','Assigned','Under Repair','Retired'].map(s=><button key={s} className={`btn ${filter===s?'btn-primary':'btn-ghost'}`} style={{fontSize:12,padding:'7px 14px'}} onClick={()=>setFilter(s)}>{s} ({s==='All'?data.devices.length:data.devices.filter(d=>d.status===s).length})</button>)}
+      </div>
+      <div className="search-wrap"><span className="search-icon">🔍</span><input className="search-inp" placeholder="Search devices..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+    </div>
+    <div className="card" style={{overflow:'hidden'}}>
+      <div className="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Device</th><th>Serial Number</th><th>Type</th><th>Branch</th><th>Assigned To</th><th>Status</th><th>Warranty</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {filtered.map(d=>{
+              const assignee=allUsers.find(u=>u.id===d.assignedTo);
+              const branch=data.company.branches.find(b=>b.id===d.branch);
+              const expSoon=isExpiringSoon(d),expired=isExpired(d);
+              return <tr key={d.id}>
+                <td>
+                  <div className="flex-gap">
+                    <span style={{fontSize:22}}>{typeIcon[d.type]||'📦'}</span>
+                    <div>
+                      <p style={{fontWeight:500,fontSize:13}}>{d.name}</p>
+                      <p style={{fontSize:11,color:'var(--text3)'}}>{d.brand} {d.model}</p>
+                    </div>
+                  </div>
+                </td>
+                <td><code style={{fontSize:11,background:'var(--surface2)',padding:'2px 6px',borderRadius:4,color:'var(--accent)'}}>{d.serial}</code></td>
+                <td><span className="chip">{d.type}</span></td>
+                <td style={{fontSize:12,color:'var(--text2)'}}>{branch?.name||'—'}</td>
+                <td>{assignee?<div className="flex-gap"><div className="avatar avatar-sm">{assignee.bitmoji}</div><div><p style={{fontSize:12,fontWeight:500}}>{assignee.name}</p><p style={{fontSize:10,color:'var(--text3)'}}>{assignee.department}</p></div></div>:<span style={{color:'var(--text3)',fontSize:12}}>Unassigned</span>}</td>
+                <td><span className={`tag ${d.status==='Available'?'tag-resolved':d.status==='Assigned'?'tag-open':d.status==='Under Repair'?'tag-progress':'tag-critical'}`}>{d.status}</span></td>
+                <td>
+                  {d.warranty?<span style={{fontSize:12,color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{expired?'⚠ Expired':expSoon?'⚡ Soon':fmtDate(d.warranty)}</span>:<span style={{color:'var(--text3)',fontSize:12}}>—</span>}
+                </td>
+                <td>
+                  <div style={{display:'flex',gap:6}}>
+                    <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setAssigning(d)}>🔗</button>
+                    <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setViewHistory(d)}>📋</button>
+                    <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setEditing(d)}>✏️</button>
+                    <button className="btn btn-danger" style={{padding:'5px 10px',fontSize:11}} onClick={()=>deleteDevice(d.id)}>🗑</button>
+                  </div>
+                </td>
+              </tr>;
+            })}
+          </tbody>
+        </table>
+        {filtered.length===0&&<div className="empty-state" style={{padding:40}}><div>📦</div><p>No devices found.</p></div>}
+      </div>
+    </div>
+    {showAdd&&<AddDeviceModal data={data} onSave={d=>{onSave(d);setShowAdd(false);}} onClose={()=>setShowAdd(false)}/>}
+    {editing&&<AddDeviceModal data={data} device={editing} onSave={d=>{onSave(d);setEditing(null);}} onClose={()=>setEditing(null)}/>}
+    {assigning&&<AssignDeviceModal data={data} device={assigning} onSave={d=>{onSave(d);setAssigning(null);}} onClose={()=>setAssigning(null)}/>}
+    {viewHistory&&<div className="modal-overlay" onClick={()=>setViewHistory(null)}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:18,fontWeight:700}}>📋 Assignment History — {viewHistory.name}</h2></div>
+        <div className="modal-body">
+          {viewHistory.history.length===0&&<div className="empty-state"><div>📋</div><p>No assignment history yet.</p></div>}
+          <div>
+            {viewHistory.history.map((h,i)=>{
+              const u=allUsers.find(x=>x.id===h.user);
+              return <div key={i} className="timeline-item">
+                <div className="timeline-dot" style={{background:h.to?'var(--surface3)':'var(--accent)',color:h.to?'var(--text3)':'#fff'}}>{i+1}</div>
+                <div style={{flex:1}}>
+                  <div className="flex-gap" style={{marginBottom:4}}>
+                    <div className="avatar avatar-sm">{u?.bitmoji||'?'}</div>
+                    <div>
+                      <p style={{fontSize:13,fontWeight:500}}>{u?.name||'Unknown'}</p>
+                      <p style={{fontSize:11,color:'var(--text3)'}}>{u?.department}</p>
+                    </div>
+                  </div>
+                  <div className="flex-gap" style={{fontSize:12,color:'var(--text2)'}}>
+                    <span>From: {h.from}</span>
+                    <span>→</span>
+                    <span style={{color:h.to?'var(--text2)':'var(--green)'}}>{h.to||'Current'}</span>
+                  </div>
+                </div>
+              </div>;
+            })}
+          </div>
+        </div>
+        <div className="modal-foot"><button className="btn btn-ghost" onClick={()=>setViewHistory(null)}>Close</button></div>
+      </div>
+    </div>}
+    {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+// ─── ADMIN USERS ─────────────────────────────────────────────────
+function AdminUsers({data,currentUser,onSave}){
+  const[tab,setTab]=useState('users');
+  const[showAdd,setShowAdd]=useState(false);
+  const[search,setSearch]=useState('');
+  const[confirm,setConfirm]=useState(null);
+  const list=tab==='users'?data.users:data.admins;
+  const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
+  const toggleActive=(id,isAdmin)=>{
+    if(isAdmin){const admins=data.admins.map(a=>a.id===id?{...a,active:!a.active}:a);onSave({...data,admins});}
+    else{const users=data.users.map(u=>u.id===id?{...u,active:!u.active}:u);onSave({...data,users});}
+    toast('User status updated.');
+  };
+  const deleteUser=(id,isAdmin)=>{
+    setConfirm({msg:'Delete this user permanently?',ok:()=>{
+      if(isAdmin)onSave({...data,admins:data.admins.filter(a=>a.id!==id)});
+      else onSave({...data,users:data.users.filter(u=>u.id!==id)});
+      toast('User deleted.');setConfirm(null);
+    }});
+  };
+  const getBranch=id=>data.company.branches.find(b=>b.id===id)?.name||'—';
+  return <div>
+    <div className="topbar">
+      <div><div className="section-head">User Management</div><div className="section-sub">Manage users and admins across all branches</div></div>
+      <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add {tab==='users'?'User':'Admin'}</button>
+    </div>
+    <div className="flex-between" style={{marginBottom:16}}>
+      <div style={{display:'flex',gap:8}}>
+        <button className={`btn ${tab==='users'?'btn-primary':'btn-ghost'}`} onClick={()=>setTab('users')}>👤 Users ({data.users.length})</button>
+        <button className={`btn ${tab==='admins'?'btn-gold':'btn-ghost'}`} onClick={()=>setTab('admins')}>🦸 Admins ({data.admins.length})</button>
+      </div>
+      <div className="search-wrap"><span className="search-icon">🔍</span><input className="search-inp" placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+    </div>
+    <div className="card" style={{overflow:'hidden'}}>
+      <div className="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Contact</th><th>Department</th><th>Branch</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {filtered.map(u=><tr key={u.id}>
+              <td>
+                <div className="flex-gap">
+                  <div className="avatar">{u.bitmoji||'😀'}</div>
+                  <div>
+                    <p style={{fontWeight:500,fontSize:13}}>{u.name}</p>
+                    <p style={{fontSize:11,color:'var(--text3)'}}>{u.designation||u.role} • {u.employeeId||'—'}</p>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <p style={{fontSize:12}}>{u.email}</p>
+                <p style={{fontSize:11,color:'var(--text3)'}}>{u.phone||'—'}</p>
+              </td>
+              <td style={{fontSize:13,color:'var(--text2)'}}>{u.department||'—'}</td>
+              <td style={{fontSize:12,color:'var(--text2)'}}>{getBranch(u.branch)}</td>
+              <td style={{fontSize:12,color:'var(--text2)'}}>{fmtDate(u.doj)}</td>
+              <td><span className={`tag ${u.active?'tag-resolved':'tag-critical'}`}>{u.active?'Active':'Inactive'}</span></td>
+              <td><div style={{display:'flex',gap:6}}>
+                <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>toggleActive(u.id,tab==='admins')}>{u.active?'Deactivate':'Activate'}</button>
+                <button className="btn btn-danger" style={{padding:'5px 10px',fontSize:11}} onClick={()=>deleteUser(u.id,tab==='admins')}>🗑</button>
+              </div></td>
+            </tr>)}
+          </tbody>
+        </table>
+        {filtered.length===0&&<div className="empty-state" style={{padding:40}}><div>👥</div><p>No users found.</p></div>}
+      </div>
+    </div>
+    {showAdd&&<AddUserModal data={data} type={tab==='admins'?'admin':'user'} onSave={d=>{onSave(d);setShowAdd(false);}} onClose={()=>setShowAdd(false)}/>}
+    {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+// ─── ADMIN BRANCHES ──────────────────────────────────────────────
+function AdminBranches({data,onSave}){
+  const[showAdd,setShowAdd]=useState(false);
+  const[form,setForm]=useState({name:'',country:'India',state:''});
+  const addBranch=()=>{
+    if(!form.name){toast('Branch name required.','error');return;}
+    const id='BR'+generateId();
+    onSave({...data,company:{...data.company,branches:[...data.company.branches,{id,...form}]}});
+    toast('Branch added!');setShowAdd(false);setForm({name:'',country:'India',state:''});
+  };
+  return <div>
+    <div className="topbar">
+      <div><div className="section-head">Branch Management</div><div className="section-sub">Manage company offices across countries and states</div></div>
+      <button className="btn btn-primary" onClick={()=>setShowAdd(!showAdd)}>+ Add Branch</button>
+    </div>
+    {showAdd&&<div className="card" style={{padding:20,marginBottom:20}}>
+      <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:14}}>New Branch</p>
+      <div className="grid-3">
+        <div><label className="lbl">Branch Name *</label><input className="inp" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Mumbai Office"/></div>
+        <div><label className="lbl">Country</label><input className="inp" value={form.country} onChange={e=>setForm({...form,country:e.target.value})} placeholder="India"/></div>
+        <div><label className="lbl">State / Region</label><input className="inp" value={form.state} onChange={e=>setForm({...form,state:e.target.value})} placeholder="Maharashtra"/></div>
+      </div>
+      <div style={{marginTop:14,display:'flex',gap:8}}><button className="btn btn-primary" onClick={addBranch}>Add Branch</button><button className="btn btn-ghost" onClick={()=>setShowAdd(false)}>Cancel</button></div>
+    </div>}
+    <div className="grid-3">
+      {data.company.branches.map(b=>{
+        const users=[...data.users,...data.admins].filter(u=>u.branch===b.id);
+        const devices=data.devices.filter(d=>d.branch===b.id);
+        const tickets=data.tickets.filter(t=>t.branch===b.id);
+        const open=tickets.filter(t=>t.status!=='Resolved').length;
+        return <div key={b.id} className="card" style={{padding:20}}>
+          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
+            <div>
+              <p style={{fontFamily:'var(--font-head)',fontWeight:700,fontSize:16}}>{b.name}</p>
+              <p style={{fontSize:12,color:'var(--text3)',marginTop:4}}>🌍 {[b.state,b.country].filter(Boolean).join(', ')}</p>
+            </div>
+            <span className="chip">#{b.id}</span>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div style={{background:'var(--surface2)',borderRadius:'var(--r2)',padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:700}}>{users.length}</div>
+              <div style={{fontSize:11,color:'var(--text3)'}}>Team Members</div>
+            </div>
+            <div style={{background:'var(--surface2)',borderRadius:'var(--r2)',padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:700}}>{devices.length}</div>
+              <div style={{fontSize:11,color:'var(--text3)'}}>Devices</div>
+            </div>
+            <div style={{background:'var(--surface2)',borderRadius:'var(--r2)',padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:700}}>{tickets.length}</div>
+              <div style={{fontSize:11,color:'var(--text3)'}}>Total Tickets</div>
+            </div>
+            <div style={{background:open>0?'rgba(239,68,68,.08)':'var(--surface2)',borderRadius:'var(--r2)',padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:700,color:open>0?'var(--red)':'var(--text)'}}>{open}</div>
+              <div style={{fontSize:11,color:'var(--text3)'}}>Open Tickets</div>
+            </div>
+          </div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+// ─── ADMIN REPORTS ───────────────────────────────────────────────
+function AdminReports({data}){
+  const tickets=data.tickets;
+  const devices=data.devices;
+  const warrantyExpired=devices.filter(d=>d.warranty&&new Date(d.warranty)<new Date());
+  const warrantyExpiring=devices.filter(d=>{if(!d.warranty)return false;const diff=(new Date(d.warranty)-new Date())/(1000*60*60*24*30);return diff>0&&diff<3;});
+  const totalValue=devices.reduce((s,d)=>s+(Number(d.price)||0),0);
+  const resolvedPct=tickets.length?Math.round((tickets.filter(t=>t.status==='Resolved').length/tickets.length)*100):0;
+  return <div>
+    <div className="topbar"><div><div className="section-head">Reports & Analytics</div><div className="section-sub">Comprehensive insights across your service inventory</div></div></div>
+    <div className="grid-4" style={{marginBottom:24}}>
+      <StatCard label="Total Tickets" value={tickets.length} icon="🎫" color="blue"/>
+      <StatCard label="Resolution Rate" value={`${resolvedPct}%`} icon="📈" color="green"/>
+      <StatCard label="Fleet Value" value={`₹${(totalValue/100000).toFixed(1)}L`} icon="💰" color="gold"/>
+      <StatCard label="Warranty Alerts" value={warrantyExpired.length+warrantyExpiring.length} icon="⚠️" color="red"/>
+    </div>
+    <div className="grid-2" style={{marginBottom:24}}>
+      <div className="card" style={{padding:20}}>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>⚠️ Warranty Alerts</p>
+        {[...warrantyExpired.map(d=>({...d,_alert:'expired'})),...warrantyExpiring.map(d=>({...d,_alert:'soon'}))].length===0&&<div className="empty-state"><div>✅</div><p>All warranties are valid.</p></div>}
+        {[...warrantyExpired.map(d=>({...d,_alert:'expired'})),...warrantyExpiring.map(d=>({...d,_alert:'soon'}))].map(d=><div key={d.id} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 0',borderBottom:'1px solid var(--border)'}}>
+          <span style={{fontSize:24}}>{'💻'}</span>
+          <div style={{flex:1}}>
+            <p style={{fontSize:13,fontWeight:500}}>{d.name}</p>
+            <p style={{fontSize:11,color:'var(--text3)'}}>Warranty: {fmtDate(d.warranty)}</p>
+          </div>
+          <span style={{fontSize:12,fontWeight:600,color:d._alert==='expired'?'var(--red)':'var(--gold)'}}>{d._alert==='expired'?'EXPIRED':'EXPIRING'}</span>
+        </div>)}
+      </div>
+      <div className="card" style={{padding:20}}>
+        <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>📦 Inventory Summary</p>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {DEVICE_TYPES.map(t=>{
+            const devs=devices.filter(d=>d.type===t);
+            if(!devs.length)return null;
+            const avail=devs.filter(d=>d.status==='Available').length;
+            const value=devs.reduce((s,d)=>s+(Number(d.price)||0),0);
+            return <div key={t} className="flex-between" style={{padding:'8px 12px',background:'var(--surface2)',borderRadius:'var(--r2)'}}>
+              <span style={{fontSize:13}}>{t}</span>
+              <div style={{display:'flex',gap:16,alignItems:'center'}}>
+                <span style={{fontSize:12,color:'var(--text3)'}}>{devs.length} total, {avail} available</span>
+                <span style={{fontSize:12,fontWeight:500}}>₹{(value/1000).toFixed(0)}K</span>
+              </div>
+            </div>;
+          })}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── USER DASHBOARD ──────────────────────────────────────────────
+function UserDashboard({data,currentUser}){
+  const myDevices=data.devices.filter(d=>d.assignedTo===currentUser.id);
+  const myTickets=data.tickets.filter(t=>t.raisedBy===currentUser.id);
+  const open=myTickets.filter(t=>t.status==='Open').length;
+  const inProg=myTickets.filter(t=>t.status==='In Progress').length;
+  const resolved=myTickets.filter(t=>t.status==='Resolved').length;
+  const branch=data.company.branches.find(b=>b.id===currentUser.branch);
+  const recent=myTickets.slice().sort((a,b)=>new Date(b.raisedDate)-new Date(a.raisedDate)).slice(0,3);
+  return <div>
+    <div className="topbar"><div><div className="section-head">My Workspace</div><div className="section-sub">Welcome back, {currentUser.name} • {branch?.name||''}</div></div></div>
+    <div style={{display:'flex',gap:20,marginBottom:24,flexWrap:'wrap'}}>
+      <div style={{flex:'0 0 auto'}}>
+        <div className="card" style={{padding:24,textAlign:'center',width:200}}>
+          <div className="avatar avatar-lg" style={{margin:'0 auto 12px'}}>{currentUser.bitmoji}</div>
+          <p style={{fontWeight:600,fontSize:15}}>{currentUser.name}</p>
+          <p style={{fontSize:12,color:'var(--text3)',marginTop:4}}>{currentUser.designation}</p>
+          <p style={{fontSize:11,color:'var(--text3)'}}>{currentUser.department}</p>
+          <hr className="divider"/>
+          <div style={{display:'flex',flexDirection:'column',gap:6,fontSize:12}}>
+            <div className="flex-between"><span style={{color:'var(--text3)'}}>Employee ID</span><span>{currentUser.employeeId||'—'}</span></div>
+            <div className="flex-between"><span style={{color:'var(--text3)'}}>Joined</span><span>{fmtDate(currentUser.doj)}</span></div>
+            <div className="flex-between"><span style={{color:'var(--text3)'}}>Branch</span><span style={{textAlign:'right',maxWidth:90,fontSize:11}}>{branch?.name?.split('—')[0].trim()}</span></div>
+          </div>
+        </div>
+      </div>
+      <div style={{flex:1,minWidth:240}}>
+        <div className="grid-3" style={{marginBottom:16}}>
+          <StatCard label="Open Tickets" value={open} icon="🔓" color="blue"/>
+          <StatCard label="In Progress" value={inProg} icon="⏳" color="gold"/>
+          <StatCard label="Resolved" value={resolved} icon="✅" color="green"/>
+        </div>
+        <div className="card" style={{padding:20}}>
+          <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:14}}>My Recent Tickets</p>
+          {recent.length===0&&<div className="empty-state"><div>🎉</div><p>No tickets raised yet!</p></div>}
+          {recent.map(t=><div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid var(--border)'}}>
+            <div style={{flex:1}}>
+              <p style={{fontSize:13,fontWeight:500}}>{t.title}</p>
+              <p style={{fontSize:11,color:'var(--text3)'}}>{fmtDate(t.raisedDate)}</p>
+            </div>
+            <span className={`tag tag-${t.status.toLowerCase().replace(' ','-')}`}>{t.status}</span>
+          </div>)}
+        </div>
+      </div>
+    </div>
+    <div>
+      <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:14}}>My Assigned Devices ({myDevices.length})</p>
+      {myDevices.length===0&&<div className="empty-state card" style={{padding:40}}><div>💻</div><p>No devices assigned to you yet.</p></div>}
+      <div className="grid-3">
+        {myDevices.map(d=>{
+          const expired=d.warranty&&new Date(d.warranty)<new Date();
+          const expSoon=d.warranty&&!expired&&(new Date(d.warranty)-new Date())/(1000*60*60*24*30)<3;
+          return <div key={d.id} className="device-card">
+            <div>
+              <div style={{fontSize:32,marginBottom:8}}>💻</div>
+              <p style={{fontWeight:600,fontSize:14}}>{d.name}</p>
+              <p style={{fontSize:12,color:'var(--text3)',marginTop:2}}>{d.brand} {d.model}</p>
+            </div>
+            <hr className="divider" style={{margin:'10px 0'}}/>
+            <div style={{display:'flex',flexDirection:'column',gap:6,fontSize:12}}>
+              <div className="flex-between"><span style={{color:'var(--text3)'}}>Serial No.</span><code style={{fontSize:11,background:'var(--surface2)',padding:'1px 5px',borderRadius:3,color:'var(--accent)'}}>{d.serial}</code></div>
+              <div className="flex-between"><span style={{color:'var(--text3)'}}>Color</span><span>{d.color||'—'}</span></div>
+              <div className="flex-between"><span style={{color:'var(--text3)'}}>Purchased</span><span>{fmtDate(d.buyDate)}</span></div>
+              <div className="flex-between"><span style={{color:'var(--text3)'}}>Warranty</span>
+                <span style={{color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)',fontWeight:500}}>{d.warranty?fmtDate(d.warranty):'—'}</span>
+              </div>
+            </div>
+            {(expired||expSoon)&&<div style={{background:expired?'rgba(239,68,68,.1)':'rgba(245,200,66,.1)',border:`1px solid ${expired?'rgba(239,68,68,.3)':'rgba(245,200,66,.3)'}`,borderRadius:'var(--r2)',padding:'6px 10px',fontSize:11,color:expired?'var(--red)':'var(--gold)',marginTop:4}}>
+              {expired?'⚠️ Warranty expired':'⚡ Warranty expiring soon'}
+            </div>}
+          </div>;
+        })}
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── USER TICKETS ────────────────────────────────────────────────
+function UserTickets({data,currentUser,onSave}){
+  const[showNew,setShowNew]=useState(false);
+  const[selected,setSelected]=useState(null);
+  const[filter,setFilter]=useState('All');
+  const myTickets=data.tickets.filter(t=>t.raisedBy===currentUser.id);
+  const filtered=myTickets.filter(t=>filter==='All'||t.status===filter).sort((a,b)=>new Date(b.raisedDate)-new Date(a.raisedDate));
+  const allUsers=[...data.users,...data.admins];
+  const priIcon={Critical:'🔴',High:'🟠',Medium:'🟡',Low:'🟢'};
+  return <div>
+    <div className="topbar">
+      <div><div className="section-head">My Tickets</div><div className="section-sub">Track and manage your support requests</div></div>
+      <button className="btn btn-primary" onClick={()=>setShowNew(true)}>+ New Ticket</button>
+    </div>
+    <div style={{display:'flex',gap:8,marginBottom:16}}>
+      {['All','Open','In Progress','Resolved'].map(s=><button key={s} className={`btn ${filter===s?'btn-primary':'btn-ghost'}`} style={{fontSize:12,padding:'7px 14px'}} onClick={()=>setFilter(s)}>{s} ({s==='All'?myTickets.length:myTickets.filter(t=>t.status===s).length})</button>)}
+    </div>
+    {filtered.length===0&&<div className="empty-state card" style={{padding:60}}><div className="icon">🎫</div><h3>No tickets found</h3><p>Click "New Ticket" to raise an issue</p></div>}
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {filtered.map(t=>{
+        const dev=data.devices.find(d=>d.id===t.device);
+        const resolver=t.resolvedBy?allUsers.find(u=>u.id===t.resolvedBy):null;
+        return <div key={t.id} className="ticket-row" onClick={()=>setSelected(t)}>
+          <div style={{flex:1,minWidth:0}}>
+            <div className="flex-gap" style={{marginBottom:6}}>
+              <span>{priIcon[t.priority]}</span>
+              <p style={{fontWeight:500,fontSize:14,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{t.title}</p>
+              <span className="chip" style={{flexShrink:0}}>#{t.id}</span>
+            </div>
+            <div style={{display:'flex',gap:12,fontSize:12,color:'var(--text2)',flexWrap:'wrap'}}>
+              <span>📂 {t.category}</span>
+              {dev&&<span>💻 {dev.name}</span>}
+              <span>📅 {fmtDate(t.raisedDate)}</span>
+              {resolver&&<span>✅ Resolved by {resolver.name} • {fmtDate(t.resolvedDate)}</span>}
+              {t.comments.length>0&&<span>💬 {t.comments.length} comment{t.comments.length>1?'s':''}</span>}
+            </div>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+            <span className={`tag tag-${t.status.toLowerCase().replace(' ','-')}`}>{t.status}</span>
+            <span className={`tag tag-${t.priority.toLowerCase()}`}>{t.priority}</span>
+          </div>
+        </div>;
+      })}
+    </div>
+    {showNew&&<NewTicketModal data={data} currentUser={currentUser} onSave={d=>{onSave(d);setShowNew(false);}} onClose={()=>setShowNew(false)}/>}
+    {selected&&<TicketModal data={data} ticket={selected} currentUser={currentUser} onSave={d=>{onSave(d);setSelected(data.tickets.find(t=>t.id===selected.id)||null);}} onClose={()=>setSelected(null)}/>}
+  </div>;
+}
+
+// ─── USER DEVICES ────────────────────────────────────────────────
+function UserDevices({data,currentUser}){
+  const myDevices=data.devices.filter(d=>d.assignedTo===currentUser.id);
+  return <div>
+    <div className="topbar"><div><div className="section-head">My Devices</div><div className="section-sub">Complete details of all devices assigned to you</div></div></div>
+    {myDevices.length===0&&<div className="empty-state card" style={{padding:80}}><div className="icon">💻</div><h3>No devices assigned</h3><p>Contact your admin to get devices assigned to you.</p></div>}
+    <div style={{display:'flex',flexDirection:'column',gap:14}}>
+      {myDevices.map(d=>{
+        const expired=d.warranty&&new Date(d.warranty)<new Date();
+        const expSoon=d.warranty&&!expired&&(new Date(d.warranty)-new Date())/(1000*60*60*24*30)<3;
+        const myTickets=data.tickets.filter(t=>t.device===d.id&&t.raisedBy===currentUser.id);
+        return <div key={d.id} className="card" style={{padding:24}}>
+          <div style={{display:'flex',gap:20,flexWrap:'wrap'}}>
+            <div style={{fontSize:52}}>💻</div>
+            <div style={{flex:1,minWidth:200}}>
+              <div className="flex-between" style={{flexWrap:'wrap',gap:8,marginBottom:12}}>
+                <div>
+                  <h3 style={{fontFamily:'var(--font-head)',fontWeight:700,fontSize:18}}>{d.name}</h3>
+                  <p style={{color:'var(--text2)',fontSize:13,marginTop:2}}>{d.brand} {d.model}</p>
+                </div>
+                <div style={{display:'flex',gap:8}}>
+                  <span className={`tag ${d.status==='Assigned'?'tag-open':'tag-resolved'}`}>{d.status}</span>
+                  {expired&&<span className="tag tag-critical">Warranty Expired</span>}
+                  {expSoon&&<span className="tag tag-high">Warranty Expiring</span>}
+                </div>
+              </div>
+              <div className="grid-3" style={{gap:10}}>
+                {[
+                  {label:'Serial Number',value:<code style={{fontSize:12,background:'var(--surface2)',padding:'2px 6px',borderRadius:4,color:'var(--accent)'}}>{d.serial}</code>},
+                  {label:'Color',value:d.color||'—'},
+                  {label:'Type',value:d.type},
+                  {label:'Brand',value:d.brand||'—'},
+                  {label:'Model',value:d.model||'—'},
+                  {label:'Purchase Date',value:fmtDate(d.buyDate)},
+                  {label:'Warranty',value:<span style={{color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{fmtDate(d.warranty)}</span>},
+                  {label:'Warranty Card',value:d.warrantyCard||'—'},
+                  {label:'Assigned Since',value:fmtDate(d.assignedDate)},
+                ].map(item=><div key={item.label} style={{background:'var(--surface2)',borderRadius:'var(--r2)',padding:'10px 12px'}}>
+                  <p style={{fontSize:10,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.4px',marginBottom:4}}>{item.label}</p>
+                  <p style={{fontSize:13,fontWeight:500}}>{item.value}</p>
+                </div>)}
+              </div>
+              {myTickets.length>0&&<div style={{marginTop:14}}>
+                <p style={{fontSize:12,color:'var(--text2)',marginBottom:8}}>Tickets for this device ({myTickets.length})</p>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                  {myTickets.map(t=><span key={t.id} className={`tag tag-${t.status.toLowerCase().replace(' ','-')}`}>#{t.id} {t.status}</span>)}
+                </div>
+              </div>}
+            </div>
+          </div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+// ─── PROFILE ─────────────────────────────────────────────────────
+function Profile({data,currentUser,onSave}){
+  const[editing,setEditing]=useState(false);
+  const[form,setForm]=useState({...currentUser});
+  const[changePw,setChangePw]=useState(false);
+  const[newPw,setNewPw]=useState({old:'',new1:'',new2:''});
+  const save=()=>{
+    const isAdmin=currentUser.role==='admin';
+    if(isAdmin){const admins=data.admins.map(a=>a.id===currentUser.id?{...a,...form}:a);onSave({...data,admins},form);}
+    else{const users=data.users.map(u=>u.id===currentUser.id?{...u,...form}:u);onSave({...data,users},form);}
+    toast('Profile updated!');setEditing(false);
+  };
+  const savePw=()=>{
+    if(newPw.old!==currentUser.password){toast('Incorrect current password.','error');return;}
+    if(newPw.new1!==newPw.new2){toast('New passwords do not match.','error');return;}
+    if(newPw.new1.length<6){toast('Password must be at least 6 characters.','error');return;}
+    const isAdmin=currentUser.role==='admin';
+    if(isAdmin){const admins=data.admins.map(a=>a.id===currentUser.id?{...a,password:newPw.new1}:a);onSave({...data,admins},{...currentUser,password:newPw.new1});}
+    else{const users=data.users.map(u=>u.id===currentUser.id?{...u,password:newPw.new1}:u);onSave({...data,users},{...currentUser,password:newPw.new1});}
+    toast('Password changed!');setChangePw(false);setNewPw({old:'',new1:'',new2:''});
+  };
+  const f=v=>setForm(p=>({...p,...v}));
+  const branch=data.company.branches.find(b=>b.id===currentUser.branch);
+  return <div>
+    <div className="topbar"><div><div className="section-head">My Profile</div><div className="section-sub">Manage your personal information and settings</div></div>
+      <button className="btn btn-primary" onClick={()=>editing?save():setEditing(true)}>{editing?'Save Changes':'Edit Profile'}</button>
+    </div>
+    <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:20}}>
+      <div className="card" style={{padding:24,textAlign:'center',height:'fit-content'}}>
+        <div className="avatar avatar-lg" style={{margin:'0 auto 14px'}}>{editing?form.bitmoji:currentUser.bitmoji}</div>
+        <p style={{fontWeight:700,fontSize:16,fontFamily:'var(--font-head)'}}>{currentUser.name}</p>
+        <p style={{fontSize:12,color:'var(--text3)',marginTop:4}}>{currentUser.designation}</p>
+        <p style={{fontSize:11,color:'var(--text3)'}}>{currentUser.department}</p>
+        <hr className="divider"/>
+        <span className={`tag ${currentUser.role==='admin'?'tag-progress':'tag-open'}`}>{currentUser.role==='admin'?'Administrator':'Team Member'}</span>
+        <div style={{marginTop:16,fontSize:12,color:'var(--text3)',lineHeight:1.8}}>
+          <p>📧 {currentUser.email}</p>
+          <p>📱 {currentUser.phone||'—'}</p>
+          <p>🏢 {branch?.name||'—'}</p>
+          <p>📅 {fmtDate(currentUser.doj)}</p>
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+        <div className="card" style={{padding:24}}>
+          <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Personal Information</p>
+          {editing?<div className="flex-col">
+            <div className="grid-2">
+              <div><label className="lbl">Full Name</label><input className="inp" value={form.name} onChange={e=>f({name:e.target.value})}/></div>
+              <div><label className="lbl">Phone</label><input className="inp" value={form.phone||''} onChange={e=>f({phone:e.target.value})}/></div>
+              <div><label className="lbl">Department</label><input className="inp" value={form.department||''} onChange={e=>f({department:e.target.value})}/></div>
+              <div><label className="lbl">Designation</label><input className="inp" value={form.designation||''} onChange={e=>f({designation:e.target.value})}/></div>
+            </div>
+            <BitmojiPicker selected={form.bitmoji} onSelect={b=>f({bitmoji:b})}/>
+            <div style={{display:'flex',gap:8}}><button className="btn btn-primary" onClick={save}>Save</button><button className="btn btn-ghost" onClick={()=>setEditing(false)}>Cancel</button></div>
+          </div>:<div className="grid-2">
+            {[['Name',currentUser.name],['Email',currentUser.email],['Phone',currentUser.phone||'—'],['Department',currentUser.department||'—'],['Designation',currentUser.designation||'—'],['Employee ID',currentUser.employeeId||'—'],['Date of Joining',fmtDate(currentUser.doj)],['Branch',branch?.name||'—']].map(([k,v])=><div key={k}>
+              <p style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.4px',marginBottom:4}}>{k}</p>
+              <p style={{fontSize:14,fontWeight:500}}>{v}</p>
+            </div>)}
+          </div>}
+        </div>
+        <div className="card" style={{padding:24}}>
+          <div className="flex-between" style={{marginBottom:16}}>
+            <p style={{fontFamily:'var(--font-head)',fontWeight:700}}>Security</p>
+            <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>setChangePw(!changePw)}>🔑 Change Password</button>
+          </div>
+          {changePw&&<div className="flex-col">
+            <div><label className="lbl">Current Password</label><input className="inp" type="password" value={newPw.old} onChange={e=>setNewPw({...newPw,old:e.target.value})}/></div>
+            <div><label className="lbl">New Password</label><input className="inp" type="password" value={newPw.new1} onChange={e=>setNewPw({...newPw,new1:e.target.value})}/></div>
+            <div><label className="lbl">Confirm New Password</label><input className="inp" type="password" value={newPw.new2} onChange={e=>setNewPw({...newPw,new2:e.target.value})}/></div>
+            <div style={{display:'flex',gap:8}}><button className="btn btn-primary" onClick={savePw}>Update Password</button><button className="btn btn-ghost" onClick={()=>setChangePw(false)}>Cancel</button></div>
+          </div>}
+          {!changePw&&<div style={{background:'var(--surface2)',borderRadius:'var(--r2)',padding:'12px 14px',fontSize:13,color:'var(--text2)'}}>
+            🔐 Password last changed: Unknown • Keep your password secure and unique.
+          </div>}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── COMPANY SETTINGS ────────────────────────────────────────────
+function CompanySettings({data,onSave}){
+  const[name,setName]=useState(data.company.name);
+  const save=()=>{onSave({...data,company:{...data.company,name}});toast('Company settings saved!');};
+  return <div>
+    <div className="topbar"><div><div className="section-head">Company Settings</div><div className="section-sub">Configure your organization details</div></div></div>
+    <div className="card" style={{padding:28,maxWidth:500}}>
+      <p style={{fontFamily:'var(--font-head)',fontWeight:700,marginBottom:16}}>Organization Info</p>
+      <div className="flex-col">
+        <div><label className="lbl">Company Name</label><input className="inp" value={name} onChange={e=>setName(e.target.value)}/></div>
+        <button className="btn btn-primary" style={{alignSelf:'flex-start'}} onClick={save}>Save Settings</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ─── ADMIN APP ───────────────────────────────────────────────────
+function AdminApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
+  const[page,setPage]=useState('dashboard');
+  const openTickets=data.tickets.filter(t=>t.status!=='Resolved').length;
+  const navItems=[
+    {id:'dashboard',icon:'📊',label:'Dashboard'},
+    {id:'tickets',icon:'🎫',label:'Tickets',badge:openTickets||null},
+    {id:'devices',icon:'📦',label:'Devices'},
+    {id:'users',icon:'👥',label:'Users & Admins'},
+    {id:'branches',icon:'🌍',label:'Branches'},
+    {id:'reports',icon:'📈',label:'Reports'},
+    {id:'divider'},
+    {id:'settings',icon:'⚙️',label:'Company Settings'},
+    {id:'profile',icon:'👤',label:'My Profile'},
+  ];
+  const handleSave=(d,updatedUser)=>{onSave(d);if(updatedUser)updateCurrentUser(updatedUser);};
+  const pages={
+    dashboard:<AdminDashboard data={data} currentUser={currentUser}/>,
+    tickets:<AdminTickets data={data} currentUser={currentUser} onSave={onSave}/>,
+    devices:<AdminDevices data={data} currentUser={currentUser} onSave={onSave}/>,
+    users:<AdminUsers data={data} currentUser={currentUser} onSave={onSave}/>,
+    branches:<AdminBranches data={data} onSave={onSave}/>,
+    reports:<AdminReports data={data}/>,
+    settings:<CompanySettings data={data} onSave={onSave}/>,
+    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
+  };
+  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
+    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
+    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
+  </div>;
+}
+
+// ─── USER APP ────────────────────────────────────────────────────
+function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
+  const[page,setPage]=useState('dashboard');
+  const myOpen=data.tickets.filter(t=>t.raisedBy===currentUser.id&&t.status!=='Resolved').length;
+  const navItems=[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'tickets',icon:'🎫',label:'My Tickets',badge:myOpen||null},
+    {id:'devices',icon:'💻',label:'My Devices'},
+    {id:'divider'},
+    {id:'profile',icon:'👤',label:'My Profile'},
+  ];
+  const handleSave=(d,updatedUser)=>{onSave(d);if(updatedUser)updateCurrentUser(updatedUser);};
+  const pages={
+    dashboard:<UserDashboard data={data} currentUser={currentUser}/>,
+    tickets:<UserTickets data={data} currentUser={currentUser} onSave={onSave}/>,
+    devices:<UserDevices data={data} currentUser={currentUser}/>,
+    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
+  };
+  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
+    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
+    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
+  </div>;
+}
+
+// ─── ROOT APP ────────────────────────────────────────────────────
+// ─── ROOT APP ────────────────────────────────────────────────────
+function App(){
+  const[data,setData]=useState(()=>loadData());
+  const[screen,setScreen]=useState('landing');
+  const[currentUser,setCurrentUser]=useState(null);
+  
+  const handleSave=useCallback(d=>{setData(d);saveData(d);},[]);
+  const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
+  const handleLogout=()=>{setCurrentUser(null);setScreen('landing');toast('Logged out successfully.');};
+  const handleLogin=u=>{setCurrentUser(u);setScreen('app');};
+  
+  if(screen==='landing')return <>
+    <ThemeToggle />
+    <LandingPage onEnter={mode=>setScreen(`auth-${mode}`)}/>
+    <Toast/>
+  </>;
+  if(screen==='auth-admin')return <>
+    <ThemeToggle />
+    <AuthPage mode="admin" data={data} onLogin={handleLogin}/>
+    <button onClick={()=>setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
+    <Toast/>
+  </>;
+  if(screen==='auth-user')return <>
+    <ThemeToggle />
+    <AuthPage mode="user" data={data} onLogin={handleLogin}/>
+    <button onClick={()=>setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
+    <Toast/>
+  </>;
+  if(screen==='app'&&currentUser){
+    if(currentUser.role==='admin')return <>
+      <ThemeToggle />
+      <AdminApp data={data} currentUser={currentUser} onSave={handleSave} onLogout={handleLogout} updateCurrentUser={updateCurrentUser}/>
+      <Toast/>
+    </>;
+    return <>
+      <ThemeToggle />
+      <UserApp data={data} currentUser={currentUser} onSave={handleSave} onLogout={handleLogout} updateCurrentUser={updateCurrentUser}/>
+      <Toast/>
+    </>;
+  }
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
