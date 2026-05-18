@@ -310,7 +310,7 @@ const INITIAL_DATA={
 };
 
 // Initialize Supabase Cloud Connection
-const SUPABASE_URL = "https://wyvjwimnsmtcrbpfulnc.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://wyvjwimnsmtcrbpfulnc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_UMOcAy_cYhffkigLkNKwCA_rn02_mhi";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
@@ -1928,7 +1928,7 @@ function App(){
     initializeDb();
   }, []);
   
-  const handleSave=useCallback(d=>{setData(d);saveData(d);},[]);
+  const handleSave=useCallback(d=>{setData(d);},[]);
   const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
   const handleLogout=()=>{setCurrentUser(null);setScreen('landing');toast('Logged out successfully.');};
   const handleLogin=u=>{setCurrentUser(u);setScreen('app');};
