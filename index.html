@@ -314,8 +314,7 @@ const SUPABASE_URL = "https://wyvjwimnsmtcrbpfulnc.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_UMOcAy_cYhffkigLkNKwCA_rn02_mhi";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
-// New Async Data Sync Pipeline for AssetX
-// New Async Data Sync Pipeline for AssetX
+
 async function loadDataFromCloud() {
   try {
     const [branchesRes, usersRes, devicesRes, ticketsRes] = await Promise.all([
@@ -325,71 +324,84 @@ async function loadDataFromCloud() {
       supabaseClient.from('tickets').select('*')
     ]);
 
+    // Check if any network response returned an absolute failure error
     if (branchesRes.error || usersRes.error || devicesRes.error || ticketsRes.error) {
-      console.warn("Falling back to local data structure.");
+      console.warn("Database tables missing or unreachable. Falling back to local arrays.");
       return INITIAL_DATA;
     }
 
-    // Map database naming variations back to frontend property requirements
-    const mappedUsers = usersRes.data.map(u => ({
+    // Safely fallback to empty arrays if tables don't have records yet
+    const rawUsers = usersRes.data || [];
+    const rawBranches = branchesRes.data || [];
+    const rawDevices = devicesRes.data || [];
+    const rawTickets = ticketsRes.data || [];
+
+    // Map database naming variations back to frontend property requirements securely
+    const mappedUsers = rawUsers.map(u => ({
       id: u.user_id,
       name: u.name,
       email: u.email,
-      password: u.password_hash,  // Map password_hash to password
-      role: u.role,
-      bitmoji: u.bitmoji,
-      department: u.department,
-      designation: u.designation,
-      doj: u.doj,
-      branch: u.branch_id,         // Map branch_id to branch
-      phone: u.phone,
-      employeeId: u.employee_id,
-      active: u.is_active          // Map is_active to active
+      password: u.password_hash || '',  
+      role: u.role || 'user',
+      bitmoji: u.bitmoji || '😀',
+      department: u.department || '',
+      designation: u.designation || '',
+      doj: u.doj || '',
+      branch: u.branch_id || '',         
+      phone: u.phone || '',
+      employeeId: u.employee_id || '',
+      active: u.is_active !== false          
     }));
 
     return {
       company: { 
         name: 'Demo Corp', 
         logo: '🏢', 
-        branches: branchesRes.data.map(b => ({ id: b.branch_id, name: b.name, country: b.country, state: b.state })) 
+        branches: rawBranches.map(b => ({ 
+          id: b.branch_id, 
+          name: b.name, 
+          country: b.country || '', 
+          state: b.state || '' 
+        })) 
       },
       users: mappedUsers.filter(u => u.role === 'user'),
       admins: mappedUsers.filter(u => u.role === 'admin'),
-      devices: devicesRes.data.map(d => ({
+      devices: rawDevices.map(d => ({
         id: d.device_id,
         name: d.name,
-        type: d.type,
-        brand: d.brand,
-        model: d.model,
+        type: d.type || 'Laptop',
+        brand: d.brand || '',
+        model: d.model || '',
         serial: d.serial,
-        color: d.color,
-        buyDate: d.buy_date,
-        warranty: d.warranty_expiry,
-        warrantyCard: d.warranty_card,
-        status: d.status,
-        assignedTo: d.assigned_to,
-        branch: d.branch_id,
-        price: d.price,
+        color: d.color || '',
+        buyDate: d.buy_date || '',
+        warranty: d.warranty_expiry || '',
+        warrantyCard: d.warranty_card || '',
+        status: d.status || 'Available',
+        assignedTo: d.assigned_to || null,
+        branch: d.branch_id || '',
+        price: Number(d.price) || 0,
         history: []
       })),
-      tickets: ticketsRes.data.map(t => ({
+      tickets: rawTickets.map(t => ({
         id: t.ticket_id,
         title: t.title,
-        category: t.category,
-        priority: t.priority,
-        status: t.status,
-        description: t.description,
+        category: t.category || 'Other',
+        priority: t.priority || 'Medium',
+        status: t.status || 'Open',
+        description: t.description || '',
         raisedBy: t.raised_by,
-        raisedDate: t.raised_date,
-        device: t.device_id,
-        resolvedBy: t.resolved_by,
-        resolvedDate: t.resolved_date,
-        resolutionNote: t.resolution_note,
+        raisedDate: t.raised_date || new Date().toISOString(),
+        device: t.device_id || null,
+        resolvedBy: t.resolved_by || null,
+        resolvedDate: t.resolved_date || null,
+        resolutionNote: t.resolution_note || null,
         comments: [],
-        branch: t.branch_id
+        branch: t.branch_id || ''
       }))
     };
   } catch (err) {
+    console.error("Critical Cloud Mapping Error:", err);
     return INITIAL_DATA;
   }
 }
