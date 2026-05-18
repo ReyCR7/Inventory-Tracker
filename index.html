@@ -315,6 +315,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_UMOcAy_cYhffkigLkNKwCA_rn02_mhi";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   
 // New Async Data Sync Pipeline for AssetX
+// New Async Data Sync Pipeline for AssetX
 async function loadDataFromCloud() {
   try {
     const [branchesRes, usersRes, devicesRes, ticketsRes] = await Promise.all([
@@ -329,12 +330,64 @@ async function loadDataFromCloud() {
       return INITIAL_DATA;
     }
 
+    // Map database naming variations back to frontend property requirements
+    const mappedUsers = usersRes.data.map(u => ({
+      id: u.user_id,
+      name: u.name,
+      email: u.email,
+      password: u.password_hash,  // Map password_hash to password
+      role: u.role,
+      bitmoji: u.bitmoji,
+      department: u.department,
+      designation: u.designation,
+      doj: u.doj,
+      branch: u.branch_id,         // Map branch_id to branch
+      phone: u.phone,
+      employeeId: u.employee_id,
+      active: u.is_active          // Map is_active to active
+    }));
+
     return {
-      company: { name: 'Demo Corp', logo: '🏢', branches: branchesRes.data },
-      users: usersRes.data.filter(u => u.role === 'user'),
-      admins: usersRes.data.filter(u => u.role === 'admin'),
-      devices: devicesRes.data,
-      tickets: ticketsRes.data
+      company: { 
+        name: 'Demo Corp', 
+        logo: '🏢', 
+        branches: branchesRes.data.map(b => ({ id: b.branch_id, name: b.name, country: b.country, state: b.state })) 
+      },
+      users: mappedUsers.filter(u => u.role === 'user'),
+      admins: mappedUsers.filter(u => u.role === 'admin'),
+      devices: devicesRes.data.map(d => ({
+        id: d.device_id,
+        name: d.name,
+        type: d.type,
+        brand: d.brand,
+        model: d.model,
+        serial: d.serial,
+        color: d.color,
+        buyDate: d.buy_date,
+        warranty: d.warranty_expiry,
+        warrantyCard: d.warranty_card,
+        status: d.status,
+        assignedTo: d.assigned_to,
+        branch: d.branch_id,
+        price: d.price,
+        history: []
+      })),
+      tickets: ticketsRes.data.map(t => ({
+        id: t.ticket_id,
+        title: t.title,
+        category: t.category,
+        priority: t.priority,
+        status: t.status,
+        description: t.description,
+        raisedBy: t.raised_by,
+        raisedDate: t.raised_date,
+        device: t.device_id,
+        resolvedBy: t.resolved_by,
+        resolvedDate: t.resolved_date,
+        resolutionNote: t.resolution_note,
+        comments: [],
+        branch: t.branch_id
+      }))
     };
   } catch (err) {
     return INITIAL_DATA;
