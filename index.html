@@ -10,6 +10,7 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{width:100%;height:100%}
@@ -308,11 +309,45 @@ const INITIAL_DATA={
   ],
 };
 
-function loadData(){
-  try{const d=localStorage.getItem('nexusdesk_v2');return d?JSON.parse(d):INITIAL_DATA;}catch{return INITIAL_DATA;}
+// Initialize Supabase Cloud Connection
+const SUPABASE_URL = "https://wyvjwimnsmtcrbpfulnc.supabase.co/rest/v1/";
+const SUPABASE_ANON_KEY = "sb_publishable_UMOcAy_cYhffkigLkNKwCA_rn02_mhi";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+// New Async Data Sync Pipeline for AssetX
+async function loadDataFromCloud() {
+  try {
+    const [branchesRes, usersRes, devicesRes, ticketsRes] = await Promise.all([
+      supabaseClient.from('branches').select('*'),
+      supabaseClient.from('users').select('*'),
+      supabaseClient.from('devices').select('*'),
+      supabaseClient.from('tickets').select('*')
+    ]);
+
+    if (branchesRes.error || usersRes.error || devicesRes.error || ticketsRes.error) {
+      console.warn("Falling back to local data structure.");
+      return INITIAL_DATA;
+    }
+
+    return {
+      company: { name: 'Demo Corp', logo: '🏢', branches: branchesRes.data },
+      users: usersRes.data.filter(u => u.role === 'user'),
+      admins: usersRes.data.filter(u => u.role === 'admin'),
+      devices: devicesRes.data,
+      tickets: ticketsRes.data
+    };
+  } catch (err) {
+    return INITIAL_DATA;
+  }
 }
-function saveData(d){
-  try{localStorage.setItem('nexusdesk_v2',JSON.stringify(d));}catch(e){console.error(e);}
+
+async function saveRecordToCloud(tableName, recordData) {
+  try {
+    const { error } = await supabaseClient.from(tableName).upsert(recordData);
+    if (error) throw error;
+  } catch (e) {
+    console.error("Database sync failed:", e.message);
+  }
 }
 
 // Theme Switcher Component
@@ -1880,9 +1915,18 @@ function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
 // ─── ROOT APP ────────────────────────────────────────────────────
 // ─── ROOT APP ────────────────────────────────────────────────────
 function App(){
-  const[data,setData]=useState(()=>loadData());
-  const[screen,setScreen]=useState('landing');
-  const[currentUser,setCurrentUser]=useState(null);
+  const [data, setData] = useState(INITIAL_DATA);
+  const [screen, setScreen] = useState('landing');
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // Live Cloud Mount Lifecycle Hook
+  useEffect(() => {
+    async function initializeDb() {
+      const cloudData = await loadDataFromCloud();
+      setData(cloudData);
+    }
+    initializeDb();
+  }, []);
   
   const handleSave=useCallback(d=>{setData(d);saveData(d);},[]);
   const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
