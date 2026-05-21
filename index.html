@@ -1945,7 +1945,7 @@ function AdminApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
     branches:<AdminBranches data={data} onSave={onSave}/>,
     reports:<AdminReports data={data}/>,
     settings:<CompanySettings data={data} onSave={onSave}/>,
-    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
+    profile:<Profile data={data} currentUser={currentUser} onSave={onSave}/>,
   };
   return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
     <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
