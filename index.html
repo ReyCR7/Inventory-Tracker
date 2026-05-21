@@ -278,35 +278,16 @@ function today(){return new Date().toLocaleDateString('en-IN',{day:'2-digit',mon
 function now(){return new Date().toLocaleString('en-IN',{hour12:false});}
 function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}
 
-const INITIAL_DATA={
-  company:{name:'Demo Corp',logo:'🏢',branches:[
-    {id:'BR001',name:'HQ — New Delhi',country:'India',state:'Delhi'},
-    {id:'BR002',name:'Mumbai Office',country:'India',state:'Maharashtra'},
-    {id:'BR003',name:'Singapore Branch',country:'Singapore',state:''},
-  ]},
-  users:[
-    {id:'USR001',name:'Priya Sharma',email:'priya@democorp.com',password:'user123',role:'user',bitmoji:'👩‍💼',department:'Engineering',designation:'Sr. Engineer',doj:'2021-03-15',branch:'BR001',phone:'+91 98765 43210',employeeId:'EMP001',active:true},
-    {id:'USR002',name:'Rahul Mehta',email:'rahul@democorp.com',password:'user123',role:'user',bitmoji:'🧑‍💻',department:'IT Support',designation:'Support Lead',doj:'2020-07-01',branch:'BR001',phone:'+91 87654 32109',employeeId:'EMP002',active:true},
-    {id:'USR003',name:'Sofia Chen',email:'sofia@democorp.com',password:'user123',role:'user',bitmoji:'🧑‍🎨',department:'Design',designation:'UX Designer',doj:'2022-01-20',branch:'BR002',phone:'+65 9123 4567',employeeId:'EMP003',active:true},
-  ],
-  admins:[
-    {id:'ADM001',name:'Admin User',email:'admin@democorp.com',password:'admin123',role:'admin',bitmoji:'🦸',department:'IT Operations',designation:'IT Manager',branch:'BR001',active:true},
-    {id:'ADM002',name:'Sarah Wilson',email:'sarah@democorp.com',password:'admin123',role:'admin',bitmoji:'🤩',department:'Operations',designation:'Operations Head',branch:'BR002',active:true},
-  ],
-  devices:[
-    {id:'DEV001',name:'MacBook Pro 16"',type:'Laptop',brand:'Apple',model:'MacBook Pro M3',serial:'MBP2023X001',color:'Space Gray',buyDate:'2023-01-15',warranty:'2026-01-15',warrantyCard:'WC-APPLE-001',status:'Assigned',assignedTo:'USR001',assignedDate:'2023-02-01',branch:'BR001',price:185000,history:[{user:'USR001',from:'2023-02-01',to:null}]},
-    {id:'DEV002',name:'Dell Monitor 27"',type:'Monitor',brand:'Dell',model:'UltraSharp U2722D',serial:'DLM2022Y002',color:'Black',buyDate:'2022-06-10',warranty:'2025-06-10',warrantyCard:'WC-DELL-002',status:'Assigned',assignedTo:'USR001',assignedDate:'2022-06-15',branch:'BR001',price:42000,history:[{user:'USR001',from:'2022-06-15',to:null}]},
-    {id:'DEV003',name:'ThinkPad E15',type:'Laptop',brand:'Lenovo',model:'ThinkPad E15 Gen4',serial:'LNV2023Z003',color:'Black',buyDate:'2023-04-20',warranty:'2026-04-20',warrantyCard:'WC-LNV-003',status:'Assigned',assignedTo:'USR002',assignedDate:'2023-05-01',branch:'BR001',price:78000,history:[{user:'USR002',from:'2023-05-01',to:null}]},
-    {id:'DEV004',name:'iPad Pro 12.9"',type:'Tablet',brand:'Apple',model:'iPad Pro M2',serial:'IPD2023A004',color:'Silver',buyDate:'2023-08-01',warranty:'2025-08-01',warrantyCard:'WC-APPLE-004',status:'Assigned',assignedTo:'USR003',assignedDate:'2023-08-05',branch:'BR002',price:110000,history:[{user:'USR003',from:'2023-08-05',to:null}]},
-    {id:'DEV005',name:'HP LaserJet Pro',type:'Printer',brand:'HP',model:'LaserJet M428fdw',serial:'HPP2022B005',color:'White',buyDate:'2022-03-10',warranty:'2025-03-10',warrantyCard:'WC-HP-005',status:'Available',assignedTo:null,assignedDate:null,branch:'BR001',price:32000,history:[]},
-    {id:'DEV006',name:'Cisco Switch 24P',type:'Switch',brand:'Cisco',model:'Catalyst 2960-X',serial:'CSC2021C006',color:'Gray',buyDate:'2021-11-20',warranty:'2024-11-20',warrantyCard:'WC-CISCO-006',status:'Available',assignedTo:null,assignedDate:null,branch:'BR002',price:95000,history:[]},
-  ],
-  tickets:[
-    {id:'TKT001',title:'MacBook Pro overheating during compilation',category:'Performance',priority:'High',status:'Resolved',description:'Laptop gets extremely hot during builds, fans run at max constantly.',images:[],raisedBy:'USR001',raisedDate:'2024-01-10T10:30:00',device:'DEV001',resolvedBy:'ADM001',resolvedDate:'2024-01-12T15:00:00',resolutionNote:'Replaced thermal paste and cleaned fans. Issue resolved.',comments:[{by:'ADM001',text:'Working on it, will update soon.',date:'2024-01-11T09:00:00'},{by:'USR001',text:'Thank you! Still hot though.',date:'2024-01-11T14:00:00'},{by:'ADM001',text:'Fixed! Thermal paste replaced.',date:'2024-01-12T15:00:00'}],branch:'BR001'},
-    {id:'TKT002',title:'Dell Monitor flickering randomly',category:'Display',priority:'Medium',status:'In Progress',description:'Monitor flickers every few minutes, especially on video calls.',images:[],raisedBy:'USR001',raisedDate:'2024-01-20T08:00:00',device:'DEV002',resolvedBy:null,resolvedDate:null,resolutionNote:null,comments:[{by:'ADM001',text:'Ordered replacement cable. Will fix this week.',date:'2024-01-21T10:00:00'}],branch:'BR001'},
-    {id:'TKT003',title:'ThinkPad keyboard keys not working',category:'Keyboard/Mouse',priority:'Critical',status:'Open',description:'Several keys on the keyboard stopped working. F1-F5 and some letters.',images:[],raisedBy:'USR002',raisedDate:'2024-01-22T11:00:00',device:'DEV003',resolvedBy:null,resolvedDate:null,resolutionNote:null,comments:[],branch:'BR001'},
-    {id:'TKT004',title:'iPad battery draining too fast',category:'Battery',priority:'Low',status:'Resolved',description:'Battery drops from 100% to 20% in just 3 hours.',images:[],raisedBy:'USR003',raisedDate:'2024-01-05T09:00:00',device:'DEV004',resolvedBy:'ADM002',resolvedDate:'2024-01-08T12:00:00',resolutionNote:'Battery replaced under warranty. Device working fine now.',comments:[],branch:'BR002'},
-  ],
+const INITIAL_DATA = {
+  company: {
+    name: 'My Organization',
+    logo: '🏢',
+    branches: []
+  },
+  users: [],
+  admins: [],
+  devices: [],
+  tickets: []
 };
 
 // Initialize Supabase Cloud Connection
@@ -615,8 +596,6 @@ function LandingPage({ onEnter }) {
 }
 
 // ─── AUTH PAGE ───────────────────────────────────────────────────
-// ─── UPGRADED INTERACTIVE AUTH PAGE ───────────────────────────────────
-// ─── UPGRADED INTERACTIVE AUTH PAGE ───────────────────────────────────
 function AuthPage({mode, data, onLogin}){
   const [form, setForm] = useState({email: '', password: ''});
   const [err, setErr] = useState('');
@@ -625,7 +604,9 @@ function AuthPage({mode, data, onLogin}){
   const handleLogin = () => {
     setErr('');
     const all = mode === 'admin' ? data.admins : data.users;
-    const u = all.find(x => x.email === form.email && x.password === form.password && x.active);
+    // Safe lookup matching both mapped local data state properties
+    const u = all.find(x => x.email === form.email && (x.password === form.password || x.password_hash === form.password) && x.active);
+    
     if (!u) {
       setErr('Invalid email or password. Please try again.');
       return;
@@ -633,10 +614,6 @@ function AuthPage({mode, data, onLogin}){
     onLogin(u);
     toast(`Welcome back, ${u.name}! 👋`);
   };
-
-  const hintUsers = mode === 'admin'
-    ? [{e: 'admin@democorp.com', p: 'admin123'}, {e: 'sarah@democorp.com', p: 'admin123'}]
-    : [{e: 'priya@democorp.com', p: 'user123'}, {e: 'rahul@democorp.com', p: 'user123'}, {e: 'sofia@democorp.com', p: 'user123'}];
 
   return (
     <div className="auth-page">
@@ -709,35 +686,6 @@ function AuthPage({mode, data, onLogin}){
             >
               Secure Sign In
             </button>
-          </div>
-
-          <hr className="divider" style={{margin: '24px 0 20px'}} />
-
-          {/* Quick Click Credentials Tool */}
-          <div style={{background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r2)', padding: '16px', fontSize: 12}}>
-            <p style={{marginBottom: 10, fontWeight: 600, color: 'var(--text2)', letterSpacing: '0.3px', textTransform: 'uppercase', fontSize: '10.5px'}}>
-              ⚡ Quick-Fill Mock Accounts:
-            </p>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
-              {hintUsers.map((h, i) => (
-                <div 
-                  key={i} 
-                  style={{
-                    cursor: 'pointer', 
-                    padding: '8px 10px', 
-                    color: 'var(--text2)',
-                    background: 'var(--surface2)',
-                    borderRadius: '6px',
-                    border: '1px solid var(--border)',
-                    transition: 'all 0.2s'
-                  }} 
-                  className="flex-gap"
-                  onClick={() => setForm({email: h.e, password: h.p})}
-                >
-                  <span>📧</span> <code>{h.e}</code>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
         
