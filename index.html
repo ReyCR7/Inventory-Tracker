@@ -1936,7 +1936,89 @@ function AdminApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
     {id:'settings',icon:'⚙️',label:'Company Settings'},
     {id:'profile',icon:'👤',label:'My Profile'},
   ];
-  const handleSave=(d,updatedUser)=>{onSave(d);if(updatedUser)updateCurrentUser(updatedUser);};
+  const handleSave = useCallback(async (newData) => {
+    // 1. Update the frontend UI layout instantly
+    setData(newData);
+
+    try {
+      // 2. Safely sync your multi-branch configurations
+      if (newData.company?.branches) {
+        for (const b of newData.company.branches) {
+          await saveRecordToCloud('branches', {
+            branch_id: b.id,
+            name: b.name,
+            country: b.country || '',
+            state: b.state || ''
+          });
+        }
+      }
+
+      // 3. Sync all Users and Admins back to the primary authentication table
+      const allUsers = [...(newData.users || []), ...(newData.admins || [])];
+      for (const u of allUsers) {
+        await saveRecordToCloud('users', {
+          user_id: u.id,
+          branch_id: u.branch || 'BR001',
+          name: u.name,
+          email: u.email,
+          password_hash: u.password || 'user123',
+          role: u.role || 'user',
+          bitmoji: u.bitmoji || '😀',
+          department: u.department || '',
+          designation: u.designation || '',
+          doj: u.doj || null,
+          phone: u.phone || '',
+          employee_id: u.employeeId || '',
+          is_active: u.active !== false
+        });
+      }
+
+      // 4. Sync your current Device Hardware Asset parameters
+      if (newData.devices) {
+        for (const d of newData.devices) {
+          await saveRecordToCloud('devices', {
+            device_id: d.id,
+            branch_id: d.branch || 'BR001',
+            assigned_to: d.assignedTo || null,
+            name: d.name,
+            type: d.type || 'Laptop',
+            brand: d.brand || '',
+            model: d.model || '',
+            serial: d.serial,
+            color: d.color || '',
+            buy_date: d.buyDate || null,
+            warranty_expiry: d.warranty || null,
+            warranty_card: d.warrantyCard || '',
+            status: d.status || 'Available',
+            price: Number(d.price) || 0
+          });
+        }
+      }
+
+      // 5. Sync your Support Tickets status pipelines
+      if (newData.tickets) {
+        for (const t of newData.tickets) {
+          await saveRecordToCloud('tickets', {
+            ticket_id: t.id,
+            raised_by: t.raisedBy,
+            device_id: t.device || null,
+            resolved_by: t.resolvedBy || null,
+            branch_id: t.branch || 'BR001',
+            title: t.title,
+            category: t.category || 'Other',
+            priority: t.priority || 'Medium',
+            status: t.status || 'Open',
+            description: t.description || '',
+            raised_date: t.raisedDate || new Date().toISOString(),
+            resolved_date: t.resolvedDate || null,
+            resolution_note: t.resolutionNote || null
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Cloud tracking sync error failed:", err);
+    }
+  }, []);
   const pages={
     dashboard:<AdminDashboard data={data} currentUser={currentUser}/>,
     tickets:<AdminTickets data={data} currentUser={currentUser} onSave={onSave}/>,
