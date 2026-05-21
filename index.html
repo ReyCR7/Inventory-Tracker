@@ -1936,6 +1936,62 @@ function AdminApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
     {id:'settings',icon:'⚙️',label:'Company Settings'},
     {id:'profile',icon:'👤',label:'My Profile'},
   ];
+  
+  const pages={
+    dashboard:<AdminDashboard data={data} currentUser={currentUser}/>,
+    tickets:<AdminTickets data={data} currentUser={currentUser} onSave={onSave}/>,
+    devices:<AdminDevices data={data} currentUser={currentUser} onSave={onSave}/>,
+    users:<AdminUsers data={data} currentUser={currentUser} onSave={onSave}/>,
+    branches:<AdminBranches data={data} onSave={onSave}/>,
+    reports:<AdminReports data={data}/>,
+    settings:<CompanySettings data={data} onSave={onSave}/>,
+    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
+  };
+  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
+    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
+    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
+  </div>;
+}
+
+// ─── USER APP ────────────────────────────────────────────────────
+function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
+  const[page,setPage]=useState('dashboard');
+  const myOpen=data.tickets.filter(t=>t.raisedBy===currentUser.id&&t.status!=='Resolved').length;
+  const navItems=[
+    {id:'dashboard',icon:'🏠',label:'Dashboard'},
+    {id:'tickets',icon:'🎫',label:'My Tickets',badge:myOpen||null},
+    {id:'devices',icon:'💻',label:'My Devices'},
+    {id:'divider'},
+    {id:'profile',icon:'👤',label:'My Profile'},
+  ];
+  const handleSave=(d,updatedUser)=>{onSave(d);if(updatedUser)updateCurrentUser(updatedUser);};
+  const pages={
+    dashboard:<UserDashboard data={data} currentUser={currentUser}/>,
+    tickets:<UserTickets data={data} currentUser={currentUser} onSave={onSave}/>,
+    devices:<UserDevices data={data} currentUser={currentUser}/>,
+    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
+  };
+  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
+    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
+    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
+  </div>;
+}
+
+// ─── ROOT APP ────────────────────────────────────────────────────
+function App(){
+  const [data, setData] = useState(INITIAL_DATA);
+  const [screen, setScreen] = useState('landing');
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // Live Cloud Mount Lifecycle Hook
+  useEffect(() => {
+    async function initializeDb() {
+      const cloudData = await loadDataFromCloud();
+      setData(cloudData);
+    }
+    initializeDb();
+  }, []);
+
   const handleSave = useCallback(async (newData) => {
     // 1. Update the frontend UI layout instantly
     setData(newData);
@@ -2019,63 +2075,6 @@ function AdminApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
       console.error("Cloud tracking sync error failed:", err);
     }
   }, []);
-  const pages={
-    dashboard:<AdminDashboard data={data} currentUser={currentUser}/>,
-    tickets:<AdminTickets data={data} currentUser={currentUser} onSave={onSave}/>,
-    devices:<AdminDevices data={data} currentUser={currentUser} onSave={onSave}/>,
-    users:<AdminUsers data={data} currentUser={currentUser} onSave={onSave}/>,
-    branches:<AdminBranches data={data} onSave={onSave}/>,
-    reports:<AdminReports data={data}/>,
-    settings:<CompanySettings data={data} onSave={onSave}/>,
-    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
-  };
-  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
-    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
-    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
-  </div>;
-}
-
-// ─── USER APP ────────────────────────────────────────────────────
-function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
-  const[page,setPage]=useState('dashboard');
-  const myOpen=data.tickets.filter(t=>t.raisedBy===currentUser.id&&t.status!=='Resolved').length;
-  const navItems=[
-    {id:'dashboard',icon:'🏠',label:'Dashboard'},
-    {id:'tickets',icon:'🎫',label:'My Tickets',badge:myOpen||null},
-    {id:'devices',icon:'💻',label:'My Devices'},
-    {id:'divider'},
-    {id:'profile',icon:'👤',label:'My Profile'},
-  ];
-  const handleSave=(d,updatedUser)=>{onSave(d);if(updatedUser)updateCurrentUser(updatedUser);};
-  const pages={
-    dashboard:<UserDashboard data={data} currentUser={currentUser}/>,
-    tickets:<UserTickets data={data} currentUser={currentUser} onSave={onSave}/>,
-    devices:<UserDevices data={data} currentUser={currentUser}/>,
-    profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
-  };
-  return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
-    <Sidebar user={currentUser} items={navItems} active={page} onChange={setPage} onLogout={onLogout}/>
-    <div className="main-area animate-in">{pages[page]||pages.dashboard}</div>
-  </div>;
-}
-
-// ─── ROOT APP ────────────────────────────────────────────────────
-// ─── ROOT APP ────────────────────────────────────────────────────
-function App(){
-  const [data, setData] = useState(INITIAL_DATA);
-  const [screen, setScreen] = useState('landing');
-  const [currentUser, setCurrentUser] = useState(null);
-  
-  // Live Cloud Mount Lifecycle Hook
-  useEffect(() => {
-    async function initializeDb() {
-      const cloudData = await loadDataFromCloud();
-      setData(cloudData);
-    }
-    initializeDb();
-  }, []);
-  
-  const handleSave=useCallback(d=>{setData(d);},[]);
   const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
   const handleLogout=()=>{setCurrentUser(null);setScreen('landing');toast('Logged out successfully.');};
   const handleLogin=u=>{setCurrentUser(u);setScreen('app');};
