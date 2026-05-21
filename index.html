@@ -1768,11 +1768,103 @@ function UserTickets({data,currentUser,onSave}){
   </div>;
 }
 
+// ─── NEW ASSET ALLOCATION REQUEST MODAL ─────────────────────────
+function NewAssetRequestModal({data, currentUser, onSave, onClose}){
+  const [form, setForm] = useState({
+    assetType: 'Laptop',
+    priority: 'Medium',
+    justification: ''
+  });
+
+  const handleSubmit = () => {
+    if (!form.justification.trim()) {
+      toast('Please provide a business justification for the asset.', 'error');
+      return;
+    }
+
+    const id = 'REQ' + Math.random().toString(36).slice(2, 9).toUpperCase();
+    
+    // Construct request payload structured safely for your Supabase ticket pipeline
+    const assetTicket = {
+      id: id,
+      title: `Asset Request: New ${form.assetType} Allocation`,
+      category: 'Asset Allocation Request',
+      priority: form.priority,
+      status: 'Open',
+      description: `Requested Asset Category: ${form.assetType}\n\nBusiness Justification:\n${form.justification}`,
+      raisedBy: currentUser.id,
+      raisedDate: new Date().toISOString(),
+      device: null,
+      resolvedBy: null,
+      resolvedDate: null,
+      resolutionNote: null,
+      comments: [],
+      branch: currentUser.branch || 'BR001'
+    };
+
+    onSave({
+      ...data,
+      tickets: [...data.tickets, assetTicket]
+    });
+
+    toast('Asset request submitted to IT Admin successfully! 🚀');
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
+        <div className="modal-head">
+          <h2 style={{fontFamily:'var(--font-head)', fontSize:20, fontWeight:700}}>🚀 Request New Asset Allocation</h2>
+        </div>
+        <div className="modal-body">
+          <div style={{display:'flex', flexDirection:'column', gap:14}}>
+            <div className="grid-2">
+              <div>
+                <label className="lbl">Required Asset Type</label>
+                <select className="inp" value={form.assetType} onChange={e => setForm({...form, assetType: e.target.value})}>
+                  {DEVICE_TYPES.map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="lbl">Urgency / Priority</label>
+                <select className="inp" value={form.priority} onChange={e => setForm({...form, priority: e.target.value})}>
+                  {PRIORITIES.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="lbl">Business Justification & Requirements *</label>
+              <textarea 
+                className="inp inp-area" 
+                style={{minHeight: 140}} 
+                value={form.justification} 
+                onChange={e => setForm({...form, justification: e.target.value})} 
+                placeholder="Please describe why this asset is needed, preferred specs, or special software dependencies..."
+              />
+            </div>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={handleSubmit}>Submit Request</button>
+        </div>
+      </div>
+    </div>
+  );
+}  
 // ─── USER DEVICES ────────────────────────────────────────────────
-function UserDevices({data,currentUser}){
+function UserDevices({data,currentUser,onSave}){
   const myDevices=data.devices.filter(d=>d.assignedTo===currentUser.id);
+  const [showRequest, setShowRequest] = useState(false);
   return <div>
-    <div className="topbar"><div><div className="section-head">My Devices</div><div className="section-sub">Complete details of all devices assigned to you</div></div></div>
+    <div className="topbar">
+      <div>
+        <div className="section-head">My Devices</div>
+        <div className="section-sub">Complete details of all devices assigned to you</div>
+      </div>
+      <button className="btn btn-primary" onClick={() => setShowRequest(true)}>Request Asset</button>
+    </div>
     {myDevices.length===0&&<div className="empty-state card" style={{padding:80}}><div className="icon">💻</div><h3>No devices assigned</h3><p>Contact your admin to get devices assigned to you.</p></div>}
     <div style={{display:'flex',flexDirection:'column',gap:14}}>
       {myDevices.map(d=>{
@@ -1821,6 +1913,7 @@ function UserDevices({data,currentUser}){
         </div>;
       })}
     </div>
+    {showRequest && <NewAssetRequestModal data={data} currentUser={currentUser} onSave={onSave} onClose={() => setShowRequest(false)} />}
   </div>;
 }
 
@@ -1968,7 +2061,7 @@ function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
   const pages={
     dashboard:<UserDashboard data={data} currentUser={currentUser}/>,
     tickets:<UserTickets data={data} currentUser={currentUser} onSave={onSave}/>,
-    devices:<UserDevices data={data} currentUser={currentUser}/>,
+    devices: <UserDevices data={data} currentUser={currentUser} onSave={onSave}/>,
     profile:<Profile data={data} currentUser={currentUser} onSave={handleSave}/>,
   };
   return <div style={{display:'flex',width:'100%',minHeight:'100vh'}}>
