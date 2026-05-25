@@ -298,12 +298,13 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function loadDataFromCloud() {
   try {
-    const [branchesRes, usersRes, devicesRes, ticketsRes] = await Promise.all([
-      supabaseClient.from('branches').select('*'),
-      supabaseClient.from('users').select('*'),
-      supabaseClient.from('devices').select('*'),
-      supabaseClient.from('tickets').select('*')
-    ]);
+    const [branchesRes, usersRes, devicesRes, ticketsRes, commentsRes] = await Promise.all([
+    supabaseClient.from('branches').select('*'),
+    supabaseClient.from('users').select('*'),
+    supabaseClient.from('devices').select('*'),
+    supabaseClient.from('tickets').select('*'),
+    supabaseClient.from('ticket_comments').select('*')
+  ]);
 
     // Check if any network response returned an absolute failure error
     if (branchesRes.error || usersRes.error || devicesRes.error || ticketsRes.error) {
@@ -315,6 +316,7 @@ async function loadDataFromCloud() {
     const rawUsers = usersRes.data || [];
     const rawBranches = branchesRes.data || [];
     const rawDevices = devicesRes.data || [];
+    const rawComments = commentsRes.data || [];
     const rawTickets = ticketsRes.data || [];
 
     // Map database naming variations back to frontend property requirements securely
@@ -376,8 +378,8 @@ async function loadDataFromCloud() {
         device: t.device_id || null,
         resolvedBy: t.resolved_by || null,
         resolvedDate: t.resolved_date || null,
-        resolutionNote: t.resolution_note || null,
-        comments: [],
+        resolutionNote: t.resolution_note || null, 
+        comments: rawComments.filter(c => c.ticket_id === t.ticket_id).map(c => ({ by: c.by_user_id, text: c.comment_text, date: c.created_at || new Date().toISOString() })), 
         branch: t.branch_id || ''
       }))
     };
@@ -2150,7 +2152,7 @@ function App(){
         }
       }
 
-      // 5. Sync your Support Tickets status pipelines
+      // 5. Sync your Support Tickets status pipelines and comments
       if (newData.tickets) {
         for (const t of newData.tickets) {
           await saveRecordToCloud('tickets', {
@@ -2168,9 +2170,22 @@ function App(){
             resolved_date: t.resolvedDate || null,
             resolution_note: t.resolutionNote || null
           });
+
+          // Actively stream comments straight to the dedicated comment tracking table
+          if (t.comments) {
+            for (const c of t.comments) {
+              const uniqueCommentId = t.id + '_' + new Date(c.date).getTime();
+              await saveRecordToCloud('ticket_comments', {
+                id: uniqueCommentId,
+                ticket_id: t.id,
+                by_user_id: c.by,
+                comment_text: c.text,
+                created_at: c.date
+              });
+            }
+          }
         }
-      }
-    } catch (err) {
+      } catch (err) {
       console.error("Cloud tracking sync error failed:", err);
     }
   }, []);
