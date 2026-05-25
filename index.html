@@ -1449,12 +1449,24 @@ function AdminUsers({data,currentUser,onSave}){
     else{const users=data.users.map(u=>u.id===id?{...u,active:!u.active}:u);onSave({...data,users});}
     toast('User status updated.');
   };
-  const deleteUser=(id,isAdmin)=>{
-    setConfirm({msg:'Delete this user permanently?',ok:()=>{
-      if(isAdmin)onSave({...data,admins:data.admins.filter(a=>a.id!==id)});
-      else onSave({...data,users:data.users.filter(u=>u.id!==id)});
-      toast('User deleted.');setConfirm(null);
-    }});
+  const deleteUser = (id, isAdmin) => {
+    setConfirm({
+      msg: 'Delete this user permanently?',
+      ok: async () => {
+        // 1. Instantly clear it from Supabase cloud rows first
+        await deleteRecordFromCloud('users', 'user_id', id);
+        
+        // 2. Then update the frontend display array state
+        if (isAdmin) {
+          onSave({ ...data, admins: data.admins.filter(a => a.id !== id) });
+        } else {
+          onSave({ ...data, users: data.users.filter(u => u.id !== id) });
+        }
+        
+        toast('User permanently deleted from cloud database.');
+        setConfirm(null);
+      }
+    });
   };
   const getBranch=id=>data.company.branches.find(b=>b.id===id)?.name||'—';
   return <div>
