@@ -396,6 +396,18 @@ async function saveRecordToCloud(tableName, recordData) {
   }
 }
 
+async function deleteRecordFromCloud(tableName, primaryKeyName, targetId) {
+  try {
+    const { error } = await supabaseClient
+      .from(tableName)
+      .delete()
+      .eq(primaryKeyName, targetId);
+    if (error) throw error;
+  } catch (e) {
+    console.error("Database deletion failed:", e.message);
+  }
+}  
+
 // Theme Switcher Component
 function ThemeToggle() {
   const [isLight, setIsLight] = useState(() => document.body.classList.contains('light-theme'));
@@ -2054,9 +2066,23 @@ function App(){
   }, []);
 
   const handleSave = useCallback(async (newData) => {
-    // 1. Update the frontend UI layout instantly
-    setData(newData);
+    // 1. Detect missing users/admins and instantly purge them from Supabase
+    if (data.users && newData.users) {
+      const removedUsers = data.users.filter(oldU => !newData.users.some(newU => newU.id === oldU.id));
+      for (const u of removedUsers) {
+        await deleteRecordFromCloud('users', 'user_id', u.id);
+      }
+    }
+    if (data.admins && newData.admins) {
+      const removedAdmins = data.admins.filter(oldA => !newData.admins.some(newA => newA.id === oldA.id));
+      for (const a of removedAdmins) {
+        await deleteRecordFromCloud('users', 'user_id', a.id);
+      }
+    }
 
+    // 2. Update the frontend UI layout instantly
+    setData(newData);
+    
     try {
       // 2. Safely sync your multi-branch configurations
       if (newData.company?.branches) {
