@@ -862,7 +862,7 @@ function AddUserModal({data,type,user,onSave,onClose}){
       <div className="modal-head">
         <div className="flex-between">
           <h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>
-            user ? (isAdmin ? '✏️ Edit Admin Details' : '✏️ Edit User Details') : (isAdmin ? '➕ Add New Admin' : '➕ Add New User')
+            {user ? (isAdmin ? '✏️ Edit Admin Details' : '✏️ Edit User Details') : (isAdmin ? '➕ Add New Admin' : '➕ Add New User')}
           </h2>
           <div style={{display:'flex',gap:8}}>
             <div style={{width:28,height:28,borderRadius:'50%',background:step>=1?'var(--accent)':'var(--surface2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600}}>1</div>
