@@ -299,92 +299,50 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 async function loadDataFromCloud() {
   try {
     const [branchesRes, usersRes, devicesRes, ticketsRes, commentsRes] = await Promise.all([
-    supabaseClient.from('branches').select('*'),
-    supabaseClient.from('users').select('*'),
-    supabaseClient.from('devices').select('*'),
-    supabaseClient.from('tickets').select('*'),
-    supabaseClient.from('ticket_comments').select('*')
-  ]);
+      supabaseClient.from('branches').select('*'),
+      supabaseClient.from('users').select('*'),
+      supabaseClient.from('devices').select('*'),
+      supabaseClient.from('tickets').select('*'),
+      supabaseClient.from('ticket_comments').select('*')
+    ]);
 
-    // Check if any network response returned an absolute failure error
-    if (branchesRes.error || usersRes.error || devicesRes.error || ticketsRes.error) {
-      console.warn("Database tables missing or unreachable. Falling back to local arrays.");
-      return INITIAL_DATA;
-    }
-
-    // Safely fallback to empty arrays if tables don't have records yet
-    const rawUsers = usersRes.data || [];
     const rawBranches = branchesRes.data || [];
+    const rawUsers = usersRes.data || [];
     const rawDevices = devicesRes.data || [];
-    const rawComments = commentsRes.data || [];
     const rawTickets = ticketsRes.data || [];
+    const rawComments = commentsRes.data || [];
 
-    // Map database naming variations back to frontend property requirements securely
-    const mappedUsers = rawUsers.map(u => ({
-      id: u.user_id,
-      name: u.name,
-      email: u.email,
-      password: u.password_hash || '',  
-      role: u.role || 'user',
-      bitmoji: u.bitmoji || '😀',
-      department: u.department || '',
-      designation: u.designation || '',
-      doj: u.doj || '',
-      branch: u.branch_id || '',         
-      phone: u.phone || '',
-      employeeId: u.employee_id || '',
-      active: u.is_active !== false          
+    // Parse and map data structures back into frontend state context format
+    const branches = rawBranches.map(b => ({ id: b.branch_id, name: b.name, country: b.country, state: b.state }));
+    const users = rawUsers.filter(u => u.role !== 'admin').map(u => ({ id: u.user_id, branch: u.branch_id, name: u.name, email: u.email, password: u.password_hash, role: u.role, bitmoji: u.bitmoji, department: u.department, designation: u.designation, doj: u.doj, phone: u.phone, employeeId: u.employee_id, active: u.is_active }));
+    const admins = rawUsers.filter(u => u.role === 'admin').map(u => ({ id: u.user_id, branch: u.branch_id, name: u.name, email: u.email, password: u.password_hash, role: u.role, bitmoji: u.bitmoji, department: u.department, designation: u.designation, doj: u.doj, phone: u.phone, employeeId: u.employee_id, active: u.is_active }));
+    const devices = rawDevices.map(d => ({ id: d.device_id, branch: d.branch_id, assignedTo: d.assigned_to, name: d.name, type: d.type, brand: d.brand, model: d.model, serial: d.serial, color: d.color, buyDate: d.buy_date, warranty: d.warranty_expiry, warrantyCard: d.warranty_card, status: d.status, price: d.price }));
+    const tickets = rawTickets.map(t => ({
+      id: t.ticket_id,
+      raisedBy: t.raised_by,
+      device: t.device_id,
+      resolvedBy: t.resolved_by,
+      title: t.title,
+      category: t.category,
+      priority: t.priority,
+      status: t.status,
+      description: t.description,
+      raisedDate: t.raised_date,
+      resolvedDate: t.resolved_date,
+      resolutionNote: t.resolution_note,
+      comments: rawComments.filter(c => c.ticket_id === t.ticket_id).map(c => ({ by: c.by_user_id, text: c.comment_text, date: c.created_at || new Date().toISOString() })),
+      branch: t.branch_id
     }));
 
     return {
-      company: { 
-        name: 'Demo Corp', 
-        logo: '🏢', 
-        branches: rawBranches.map(b => ({ 
-          id: b.branch_id, 
-          name: b.name, 
-          country: b.country || '', 
-          state: b.state || '' 
-        })) 
-      },
-      users: mappedUsers.filter(u => u.role === 'user'),
-      admins: mappedUsers.filter(u => u.role === 'admin'),
-      devices: rawDevices.map(d => ({
-        id: d.device_id,
-        name: d.name,
-        type: d.type || 'Laptop',
-        brand: d.brand || '',
-        model: d.model || '',
-        serial: d.serial,
-        color: d.color || '',
-        buyDate: d.buy_date || '',
-        warranty: d.warranty_expiry || '',
-        warrantyCard: d.warranty_card || '',
-        status: d.status || 'Available',
-        assignedTo: d.assigned_to || null,
-        branch: d.branch_id || '',
-        price: Number(d.price) || 0,
-        history: []
-      })),
-      tickets: rawTickets.map(t => ({
-        id: t.ticket_id,
-        title: t.title,
-        category: t.category || 'Other',
-        priority: t.priority || 'Medium',
-        status: t.status || 'Open',
-        description: t.description || '',
-        raisedBy: t.raised_by,
-        raisedDate: t.raised_date || new Date().toISOString(),
-        device: t.device_id || null,
-        resolvedBy: t.resolved_by || null,
-        resolvedDate: t.resolved_date || null,
-        resolutionNote: t.resolution_note || null, 
-        comments: rawComments.filter(c => c.ticket_id === t.ticket_id).map(c => ({ by: c.by_user_id, text: c.comment_text, date: c.created_at || new Date().toISOString() })), 
-        branch: t.branch_id || ''
-      }))
+      company: { name: 'AssetX Corp', logo: '🏢', branches },
+      users,
+      admins,
+      devices,
+      tickets
     };
   } catch (err) {
-    console.error("Critical Cloud Mapping Error:", err);
+    console.error("Failed to fetch startup data from cloud database:", err);
     return INITIAL_DATA;
   }
 }
@@ -2158,7 +2116,7 @@ function App(){
           await saveRecordToCloud('tickets', {
             ticket_id: t.id,
             raised_by: t.raisedBy,
-            device_id: t.device || null,
+            device_id: d.device || null,
             resolved_by: t.resolvedBy || null,
             branch_id: t.branch || 'BR001',
             title: t.title,
@@ -2185,10 +2143,11 @@ function App(){
             }
           }
         }
-      } catch (err) {
+      }
+    } catch (err) {
       console.error("Cloud tracking sync error failed:", err);
     }
-  }, []);
+  }, [data]);
   const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
   const handleLogout=()=>{setCurrentUser(null);setScreen('landing');toast('Logged out successfully.');};
   const handleLogin=u=>{setCurrentUser(u);setScreen('app');};
