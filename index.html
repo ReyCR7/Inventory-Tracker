@@ -2027,7 +2027,7 @@ function App(){
   const [data, setData] = useState(INITIAL_DATA);
   const [screen, setScreen] = useState('landing');
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // Live Cloud Mount Lifecycle Hook
   useEffect(() => {
     async function initializeDb() {
@@ -2116,7 +2116,7 @@ function App(){
           await saveRecordToCloud('tickets', {
             ticket_id: t.id,
             raised_by: t.raisedBy,
-            device_id: d.device || null,
+            device_id: t.device || null, // Verified Variable Fix
             resolved_by: t.resolvedBy || null,
             branch_id: t.branch || 'BR001',
             title: t.title,
@@ -2148,29 +2148,42 @@ function App(){
       console.error("Cloud tracking sync error failed:", err);
     }
   }, [data]);
-  const updateCurrentUser=useCallback(u=>setCurrentUser(u),[]);
-  const handleLogout=()=>{setCurrentUser(null);setScreen('landing');toast('Logged out successfully.');};
-  const handleLogin=u=>{setCurrentUser(u);setScreen('app');};
-  
-  if(screen==='landing')return <>
+
+  const updateCurrentUser = useCallback(u => setCurrentUser(u), []);
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setScreen('landing');
+    toast('Logged out successfully.');
+  };
+
+  const handleLogin = u => {
+    setCurrentUser(u);
+    setScreen('app');
+  };
+
+  if (screen === 'landing') return <>
     <ThemeToggle />
-    <LandingPage onEnter={mode=>setScreen(`auth-${mode}`)}/>
+    <LandingPage onEnter={mode => setScreen(`auth-${mode}`)}/>
     <Toast/>
   </>;
-  if(screen==='auth-admin')return <>
+
+  if (screen === 'auth-admin') return <>
     <ThemeToggle />
     <AuthPage mode="admin" data={data} onLogin={handleLogin}/>
-    <button onClick={()=>setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
+    <button onClick={() => setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
     <Toast/>
   </>;
-  if(screen==='auth-user')return <>
+
+  if (screen === 'auth-user') return <>
     <ThemeToggle />
     <AuthPage mode="user" data={data} onLogin={handleLogin}/>
-    <button onClick={()=>setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
+    <button onClick={() => setScreen('landing')} style={{position:'fixed',top:20,left:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'var(--r2)',padding:'8px 14px',cursor:'pointer',color:'var(--text2)',fontSize:13}}>← Back</button>
     <Toast/>
   </>;
-  if(screen==='app'&&currentUser){
-    if(currentUser.role==='admin')return <>
+
+  if (screen === 'app' && currentUser) {
+    if (currentUser.role === 'admin') return <>
       <ThemeToggle />
       <AdminApp data={data} currentUser={currentUser} onSave={handleSave} onLogout={handleLogout} updateCurrentUser={updateCurrentUser}/>
       <Toast/>
@@ -2181,6 +2194,7 @@ function App(){
       <Toast/>
     </>;
   }
+
   return null;
 }
 
