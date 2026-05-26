@@ -1277,7 +1277,19 @@ function AdminTickets({data,currentUser,onSave}){
         </div>;
       })}
     </div>
-    {selected&&<TicketModal data={data} ticket={selected} currentUser={currentUser} onSave={d=>{onSave(d);setSelected(data.tickets.find(t=>t.id===selected.id));}} onClose={()=>setSelected(null)}/>}
+    {selected && (
+      <TicketModal 
+        data={data} 
+        ticket={selected} 
+        currentUser={currentUser} 
+        onSave={d => {
+          onSave(d);
+          const freshlyUpdatedTicket = d.tickets.find(t => t.id === selected.id);
+          setSelected(freshlyUpdatedTicket);
+        }} 
+        onClose={() => setSelected(null)}
+      />
+    )}
   </div>;
 }
 
@@ -1290,6 +1302,7 @@ function AdminDevices({data,currentUser,onSave}){
   const[assigning,setAssigning]=useState(null);
   const[viewHistory,setViewHistory]=useState(null);
   const[confirm,setConfirm]=useState(null);
+  const [viewingDevice, setViewingDevice] = useState(null);
   const allUsers=[...data.users,...data.admins];
   const filtered=data.devices.filter(d=>{
     const matchStatus=filter==='All'||d.status===filter;
@@ -1324,7 +1337,7 @@ function AdminDevices({data,currentUser,onSave}){
               const assignee=allUsers.find(u=>u.id===d.assignedTo);
               const branch=data.company.branches.find(b=>b.id===d.branch);
               const expSoon=isExpiringSoon(d),expired=isExpired(d);
-              return <tr key={d.id}>
+              return <tr key={d.id} onClick={() => setViewingDevice(d)} style={{ cursor: 'pointer' }}>
                 <td>
                   <div className="flex-gap">
                     <span style={{fontSize:22}}>{typeIcon[d.type]||'📦'}</span>
@@ -1343,7 +1356,7 @@ function AdminDevices({data,currentUser,onSave}){
                   {d.warranty?<span style={{fontSize:12,color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{expired?'⚠ Expired':expSoon?'⚡ Soon':fmtDate(d.warranty)}</span>:<span style={{color:'var(--text3)',fontSize:12}}>—</span>}
                 </td>
                 <td>
-                  <div style={{display:'flex',gap:6}}>
+                  <div style={{display:'flex',gap:6}} onClick={(e) => e.stopPropagation()}>
                     <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setAssigning(d)}>🔗</button>
                     <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setViewHistory(d)}>📋</button>
                     <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setEditing(d)}>✏️</button>
@@ -1392,6 +1405,7 @@ function AdminDevices({data,currentUser,onSave}){
       </div>
     </div>}
     {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
+    {viewingDevice && <ViewDeviceModal device={viewingDevice} data={data} onClose={() => setViewingDevice(null)} />}
   </div>;
 }
 
@@ -1402,6 +1416,7 @@ function AdminUsers({data,currentUser,onSave}){
   const[editingUser,setEditingUser]=useState(null); 
   const[search,setSearch]=useState(''); 
   const[confirm,setConfirm]=useState(null);
+  const [viewingUser, setViewingUser] = useState(null);
   const list=tab==='users'?data.users:data.admins;
   const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
   const toggleActive=(id,isAdmin)=>{
@@ -1446,7 +1461,7 @@ function AdminUsers({data,currentUser,onSave}){
         <table>
           <thead><tr><th>User</th><th>Contact</th><th>Department</th><th>Branch</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {filtered.map(u=><tr key={u.id}>
+            {filtered.map(u=><tr key={u.id} onClick={() => setViewingUser(u)} style={{ cursor: 'pointer' }}>
               <td>
                 <div className="flex-gap">
                   <div className="avatar">{u.bitmoji||'😀'}</div>
@@ -1478,6 +1493,7 @@ function AdminUsers({data,currentUser,onSave}){
     {showAdd&&<AddUserModal data={data} type={tab==='admins'?'admin':'user'} onSave={d=>{onSave(d);setShowAdd(false);}} onClose={()=>setShowAdd(false)}/>}
     {editingUser&&<AddUserModal data={data} type={tab==='admins'?'admin':'user'} user={editingUser} onSave={d=>{onSave(d);setEditingUser(null);}} onClose={()=>setEditingUser(null)}/>}
     {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
+    {viewingUser && <ViewUserModal user={viewingUser} onClose={() => setViewingUser(null)} />}
   </div>;
 }
 
@@ -1716,7 +1732,19 @@ function UserTickets({data,currentUser,onSave}){
       })}
     </div>
     {showNew&&<NewTicketModal data={data} currentUser={currentUser} onSave={d=>{onSave(d);setShowNew(false);}} onClose={()=>setShowNew(false)}/>}
-    {selected&&<TicketModal data={data} ticket={selected} currentUser={currentUser} onSave={d=>{onSave(d);setSelected(data.tickets.find(t=>t.id===selected.id)||null);}} onClose={()=>setSelected(null)}/>}
+    {selected && (
+      <TicketModal 
+        data={data} 
+        ticket={selected} 
+        currentUser={currentUser} 
+        onSave={d => {
+          onSave(d);
+          const freshlyUpdatedTicket = d.tickets.find(t => t.id === selected.id);
+          setSelected(freshlyUpdatedTicket || null);
+        }} 
+        onClose={() => setSelected(null)}
+      />
+    )}
   </div>;
 }
 
@@ -2022,6 +2050,113 @@ function UserApp({data,currentUser,onSave,onLogout,updateCurrentUser}){
   </div>;
 }
 
+
+// ─── READ-ONLY DEVICE VIEW MODAL ────────────────────────────────
+function ViewDeviceModal({ device, data, onClose }) {
+  const assignedUser = [...data.users, ...data.admins].find(u => u.id === device.assignedTo);
+  
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-card" style={{ maxWidth: 550, padding: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 700 }}>
+            📦 Asset Hardware Specifications
+          </h2>
+          <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: 16 }} onClick={onClose}>✕</button>
+        </div>
+
+        <div style={{ background: 'var(--bg)', padding: 12, borderRadius: 'var(--r2)', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{device.brand} {device.model}</h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: 12, color: 'var(--text2)' }}>Serial: <code>{device.serial}</code></p>
+          </div>
+          <span className={`tag tag-${device.status === 'Available' ? 'open' : device.status === 'Assigned' ? 'progress' : 'critical'}`}>{device.status}</span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 13, marginBottom: 20 }}>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Asset Type</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{device.type}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Color Identity</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{device.color || 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Purchase Cost</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>${device.price ? Number(device.price).toLocaleString() : '0'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Purchase Date</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{device.buyDate ? new Date(device.buyDate).toLocaleDateString() : 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Warranty Expiration</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{device.warranty ? new Date(device.warranty).toLocaleDateString() : 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Current Allocation</label>
+            <p style={{ fontWeight: 600, margin: 0, color: 'var(--primary)' }}>👤 {assignedUser ? assignedUser.name : 'Unassigned (In Pool)'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  
+// ─── READ-ONLY USER VIEW MODAL ──────────────────────────────────
+function ViewUserModal({ user, onClose }) {
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-card" style={{ maxWidth: 500, padding: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid var(--border)', paddingBottom: 12 }}>
+          <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, fontWeight: 700 }}>
+            👤 {user.role === 'admin' ? 'Admin' : 'User'} Profile Details
+          </h2>
+          <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: 16 }} onClick={onClose}>✕</button>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20, background: 'var(--bg)', padding: 12, borderRadius: 'var(--r2)' }}>
+          <span style={{ fontSize: 40 }}>{user.bitmoji || '👤'}</span>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{user.name}</h3>
+            <span className="tag tag-open" style={{ marginTop: 4, display: 'inline-block' }}>{user.designation || 'Member'}</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontSize: 13 }}>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Email Address</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{user.email}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Mobile Number</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{user.phone || 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Employee ID</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{user.employeeId || 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Department</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{user.department || 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Date of Joining</label>
+            <p style={{ fontWeight: 500, margin: 0 }}>{user.doj ? new Date(user.doj).toLocaleDateString() : 'N/A'}</p>
+          </div>
+          <div>
+            <label style={{ color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Account Status</label>
+            <p style={{ margin: 0 }}><span className={`tag tag-${user.active ? 'open' : 'resolved'}`}>{user.active ? 'Active' : 'Inactive'}</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  
 // ─── ROOT APP ────────────────────────────────────────────────────
 function App(){
   const [data, setData] = useState(INITIAL_DATA);
