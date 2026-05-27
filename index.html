@@ -583,7 +583,6 @@ function AuthPage({ mode, data, onLogin }) {
     if (!form.email) return setErr('Please enter your email address.');
 
     setLoading(true);
-    // Strict Validation: Look up if this email exists in our active database list
     const allowedList = mode === 'admin' ? data.admins : data.users;
     const isRegistered = allowedList.some(user => user.email.toLowerCase() === form.email.toLowerCase() && user.active);
 
@@ -593,7 +592,6 @@ function AuthPage({ mode, data, onLogin }) {
       return;
     }
 
-    // Email matches database record! Safely trigger Supabase built-in OTP mailer
     const { error } = await supabaseClient.auth.signInWithOtp({ email: form.email.toLowerCase() });
     setLoading(false);
 
@@ -605,7 +603,7 @@ function AuthPage({ mode, data, onLogin }) {
     }
   };
 
- // Phase 2: Verify the 6-digit code entered by user
+  // Phase 2: Verify the 6-digit code entered by user
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setErr('');
@@ -624,7 +622,6 @@ function AuthPage({ mode, data, onLogin }) {
       return;
     }
 
-    // SUCCESS! Log them into the local dashboard state
     const allowedList = mode === 'admin' ? data.admins : data.users;
     const matchedProfile = allowedList.find(user => user.email.toLowerCase() === form.email.toLowerCase());
     
@@ -635,7 +632,6 @@ function AuthPage({ mode, data, onLogin }) {
     }
   };
 
-  // Standard Password Login Method
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     setErr('');
@@ -650,54 +646,64 @@ function AuthPage({ mode, data, onLogin }) {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <div className="card" style={{ width: '100%', maxWidth: 400, padding: 30, background: 'var(--bg2)', border: '1px solid var(--border)' }}>
-        <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 20, marginBottom: 10, textAlign: 'center', color: 'var(--accent)' }}>
-          {mode === 'admin' ? '⚡ ADMIN ACCESS' : '👤 USER PORTAL'}
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '20px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: 400, padding: 32, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r)' }}>
+        <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 800, marginBottom: 6, textAlign: 'center', color: 'var(--text)', letterSpacing: '-0.5px' }}>
+          {mode === 'admin' ? '🦸 ADMIN ACCESS' : '👤 USER PORTAL'}
         </h2>
-        <p style={{ fontSize: 12, color: 'var(--text2)', textAlign: 'center', marginBottom: 20 }}>
+        <p style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', marginBottom: 24 }}>
           {useOtpMode ? 'Authenticate securely via One-Time Verification Code' : 'Sign in using your account credentials'}
         </p>
 
-        {err && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--red)', color: 'var(--red)', padding: 10, borderRadius: 6, fontSize: 12, marginBottom: 15 }}>{err}</div>}
+        {err && (
+          <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--red)', padding: '12px 14px', borderRadius: 'var(--r2)', fontSize: 12, marginBottom: 20 }}>
+            {err}
+          </div>
+        )}
 
         {!useOtpMode ? (
-          /* STANDARD PASSWORD FORM */
+          /* RESTORED ORIGINAL PASSWORD FORM CONTAINER */
           <form onSubmit={handlePasswordSubmit}>
-            <div style={{ marginBottom: 15 }}>
-              <label style={{ display: 'block', fontSize: 11, color: 'var(--text2)', marginBottom: 5 }}>REGISTERED EMAIL</label>
-              <input type="email" required placeholder="name@company.com" className="input" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={{ width: '100%' }} />
+            <div style={{ marginBottom: 16 }}>
+              <label className="lbl">REGISTERED EMAIL</label>
+              <input type="email" required placeholder="name@company.com" className="inp" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 11, color: 'var(--text2)', marginBottom: 5 }}>ACCOUNT PASSWORD</label>
-              <input type="password" required placeholder="••••••••" className="input" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} style={{ width: '100%' }} />
+            <div style={{ marginBottom: 12 }}>
+              <label className="lbl">ACCOUNT PASSWORD</label>
+              <input type="password" required placeholder="••••••••" className="inp" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             </div>
-            <button type="submit" className="btn btn-accent" style={{ width: '100%', marginBottom: 15 }}>Sign In securely</button>
-            <div style={{ textAlign: 'center' }}>
-              <button type="button" onClick={() => { setUseOtpMode(true); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Forgot Password? Login via OTP</button>
+            <div style={{ textAlign: 'right', marginBottom: 24 }}>
+              <button type="button" onClick={() => { setUseOtpMode(true); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                Forgot Password? Login via OTP
+              </button>
             </div>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              Sign In securely
+            </button>
           </form>
         ) : (
-          /* OTP CODE VERIFICATION FORM */
+          /* RESTORED ORIGINAL OTP VERIFICATION FORM CONTAINER */
           <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
-            <div style={{ marginBottom: 15 }}>
-              <label style={{ display: 'block', fontSize: 11, color: 'var(--text2)', marginBottom: 5 }}>REGISTERED WORK EMAIL</label>
-              <input type="email" required disabled={otpSent} placeholder="mr.tanish13@gmail.com" className="input" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={{ width: '100%' }} />
+            <div style={{ marginBottom: 16 }}>
+              <label className="lbl">REGISTERED WORK EMAIL</label>
+              <input type="email" required disabled={otpSent} placeholder="mr.tanish13@gmail.com" className="inp" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
 
             {otpSent && (
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 11, color: 'var(--text2)', marginBottom: 5 }}>ENTER 6-DIGIT SECURITY CODE</label>
-                <input type="text" maxLength="6" required placeholder="123456" className="input" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} style={{ width: '100%', letterSpacing: 4, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }} />
+              <div style={{ marginBottom: 24 }}>
+                <label className="lbl">ENTER 6-DIGIT SECURITY CODE</label>
+                <input type="text" maxLength="6" required placeholder="123456" className="inp" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} style={{ letterSpacing: 6, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }} />
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn btn-accent" style={{ width: '100%', marginBottom: 15 }}>
+            <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: 16 }}>
               {loading ? 'Processing security layer...' : otpSent ? 'Verify Code & Enter Dashboard' : 'Send Secure Login Code'}
             </button>
             
             <div style={{ textAlign: 'center' }}>
-              <button type="button" onClick={() => { setUseOtpMode(false); setOtpSent(false); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Back to standard password login</button>
+              <button type="button" onClick={() => { setUseOtpMode(false); setOtpSent(false); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>
+                Back to standard password login
+              </button>
             </div>
           </form>
         )}
