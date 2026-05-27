@@ -1469,27 +1469,29 @@ function AdminUsers({data,currentUser,onSave}){
                     <div className="avatar">
                       {u.bitmoji || '😀'}
                     </div>
-                    <p style={{fontWeight:500,fontSize:13}}>{u.name}</p>
-                    <p style={{fontSize:11,color:'var(--text3)'}}>{u.designation||u.role} • {u.employeeId||'—'}</p>
+                    <div>
+                      <p style={{fontWeight:500,fontSize:13}}>{u.name}</p>
+                      <p style={{fontSize:11,color:'var(--text3)'}}>{u.designation||u.role} • {u.employeeId||'—'}</p>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td>
-                <p style={{fontSize:12}}>{u.email}</p>
-                <p style={{fontSize:11,color:'var(--text3)'}}>{u.phone||'—'}</p>
-              </td>
-              <td style={{fontSize:13,color:'var(--text2)'}}>{u.department||'—'}</td>
-              <td style={{fontSize:12,color:'var(--text2)'}}>{getBranch(u.branch)}</td>
-              <td style={{fontSize:12,color:'var(--text2)'}}>{fmtDate(u.doj)}</td>
-              <td><span className={`tag ${u.active?'tag-resolved':'tag-critical'}`}>{u.active?'Active':'Inactive'}</span></td>
-              <td>
+                </td>
+                <td>
+                  <p style={{fontSize:12}}>{u.email}</p>
+                  <p style={{fontSize:11,color:'var(--text3)'}}>{u.phone||'—'}</p>
+                </td>
+                <td style={{fontSize:13,color:'var(--text2)'}}>{u.department||'—'}</td>
+                <td style={{fontSize:12,color:'var(--text2)'}}>{getBranch(u.branch)}</td>
+                <td style={{fontSize:12,color:'var(--text2)'}}>{fmtDate(u.doj)}</td>
+                <td><span className={`tag ${u.active?'tag-resolved':'tag-critical'}`}>{u.active?'Active':'Inactive'}</span></td>
+                <td>
                   <div style={{ display: 'flex', gap: 6 }} onClick={(e) => e.stopPropagation()}>
                     <button className="btn btn-ghost" style={{ padding: '5px 10px', fontSize: 11 }} onClick={() => toggleActive(u.id, tab === 'admins')}>{u.active ? 'Deactivate' : 'Activate'}</button>
                     <button className="btn btn-ghost" style={{ padding: '5px 10px', fontSize: 11 }} onClick={() => setEditingUser(u)}>✏️</button>
                     <button className="btn btn-danger" style={{ padding: '5px 10px', fontSize: 11 }} onClick={() => deleteUser(u.id, tab === 'admins')}>🗑</button>
                   </div>
                 </td>
-            </tr>)}
+              </tr>
+            ))}
           </tbody>
         </table>
         {filtered.length===0&&<div className="empty-state" style={{padding:40}}><div>👥</div><p>No users found.</p></div>}
