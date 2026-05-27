@@ -1338,8 +1338,8 @@ function AdminDevices({data,currentUser,onSave}){
               const assignee=allUsers.find(u=>u.id===d.assignedTo);
               const branch=data.company.branches.find(b=>b.id===d.branch);
               const expSoon=isExpiringSoon(d),expired=isExpired(d);
-              return <tr key={d.id} onClick={() => setViewingDevice(d)} style={{ cursor: 'pointer' }}>
-                <td>
+              return < tr key = {d . id } >
+                < td onClick = {() => setViewingDevice (d) } style = {{ cursor: 'pointer' }} >
                   <div className="flex-gap">
                     <span style={{fontSize:22}}>{typeIcon[d.type]||'📦'}</span>
                     <div>
@@ -1462,8 +1462,9 @@ function AdminUsers({data,currentUser,onSave}){
         <table>
           <thead><tr><th>User</th><th>Contact</th><th>Department</th><th>Branch</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {filtered.map(u=><tr key={u.id} onClick={() => setViewingUser(u)} style={{ cursor: 'pointer' }}>
-              <td>
+            {filtered.map(u => (
+              <tr key={u.id}>
+                <td onClick={() => setViewingUser(u)} style={{ cursor: 'pointer' }}>
                 <div className="flex-gap">
                   <div className="avatar">{u.bitmoji||'😀'}</div>
                   <div>
