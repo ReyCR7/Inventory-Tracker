@@ -1465,9 +1465,10 @@ function AdminUsers({data,currentUser,onSave}){
             {filtered.map(u => (
               <tr key={u.id}>
                 <td onClick={() => setViewingUser(u)} style={{ cursor: 'pointer' }}>
-                <div className="flex-gap">
-                  <div className="avatar">{u.bitmoji||'😀'}</div>
-                  <div>
+                  <div className="flex-gap">
+                    <div className="avatar">
+                      {u.bitmoji || '😀'}
+                    </div>
                     <p style={{fontWeight:500,fontSize:13}}>{u.name}</p>
                     <p style={{fontSize:11,color:'var(--text3)'}}>{u.designation||u.role} • {u.employeeId||'—'}</p>
                   </div>
