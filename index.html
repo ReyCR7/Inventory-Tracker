@@ -599,7 +599,7 @@ function AuthPage({ mode, data, onLogin }) {
       setErr(error.message);
     } else {
       setOtpSent(true);
-      if (typeof toast !== 'undefined') toast('🔑 Verification code sent to your registered email!');
+      if (typeof toast !== 'undefined') toast('🔑 Verification token dispatched to your registered email!');
     }
   };
 
@@ -646,8 +646,8 @@ function AuthPage({ mode, data, onLogin }) {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '20px' }}>
-      <div className="card" style={{ width: '100%', maxWidth: 400, padding: 32, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r)' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', padding: '20px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: 420, padding: 32, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r)' }}>
         <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 800, marginBottom: 6, textAlign: 'center', color: 'var(--text)', letterSpacing: '-0.5px' }}>
           {mode === 'admin' ? '🦸 ADMIN ACCESS' : '👤 USER PORTAL'}
         </h2>
@@ -662,7 +662,7 @@ function AuthPage({ mode, data, onLogin }) {
         )}
 
         {!useOtpMode ? (
-          /* RESTORED ORIGINAL PASSWORD FORM CONTAINER */
+          /* PRECISE ORIGINAL DESIGN FOR PASSWORD LOGIN */
           <form onSubmit={handlePasswordSubmit}>
             <div style={{ marginBottom: 16 }}>
               <label className="lbl">REGISTERED EMAIL</label>
@@ -682,7 +682,7 @@ function AuthPage({ mode, data, onLogin }) {
             </button>
           </form>
         ) : (
-          /* RESTORED ORIGINAL OTP VERIFICATION FORM CONTAINER */
+          /* PRECISE ORIGINAL DESIGN FOR OTP LOGINS */
           <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
             <div style={{ marginBottom: 16 }}>
               <label className="lbl">REGISTERED WORK EMAIL</label>
@@ -711,7 +711,7 @@ function AuthPage({ mode, data, onLogin }) {
     </div>
   );
 }
-
+  
 // ─── BITMOJI PICKER ─────────────────────────────────────────────
 function BitmojiPicker({selected,onSelect}){
   return <div>
