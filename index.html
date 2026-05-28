@@ -1271,11 +1271,31 @@ function AdminDashboard({data,currentUser}){
   </div>;
 }
 
+// This hook listens for Escape and triggers the onClose function
+function useEscKey(onClose) {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+}
+
 // ─── ADMIN TICKETS ───────────────────────────────────────────────
 function AdminTickets({data,currentUser,onSave}){
   const[filter,setFilter]=useState('All');
   const[search,setSearch]=useState('');
   const[selected,setSelected]=useState(null);
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (selected) setSelected(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [selected]);
   const allUsers=[...data.users,...data.admins];
   const filtered=data.tickets.filter(t=>{
     const matchStatus=filter==='All'||t.status===filter;
@@ -1346,6 +1366,19 @@ function AdminDevices({data,currentUser,onSave}){
   const[viewHistory,setViewHistory]=useState(null);
   const[confirm,setConfirm]=useState(null);
   const [viewingDevice, setViewingDevice] = useState(null);
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (editing) setEditing(null);
+        if (assigning) setAssigning(null);
+        if (viewHistory) setViewHistory(null);
+        if (showAdd) setShowAdd(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [editing, assigning, viewHistory, showAdd]);
   const allUsers=[...data.users,...data.admins];
   const filtered=data.devices.filter(d=>{
     const matchStatus=filter==='All'||d.status===filter;
@@ -1460,6 +1493,16 @@ function AdminUsers({data,currentUser,onSave}){
   const[search,setSearch]=useState(''); 
   const[confirm,setConfirm]=useState(null);
   const [viewingUser, setViewingUser] = useState(null);
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (showAdd) setShowAdd(false);
+        if (editing) setEditing(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showAdd, editing]);
   const list=tab==='users'?data.users:data.admins;
   const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
   const toggleActive=(id,isAdmin)=>{
@@ -1553,6 +1596,19 @@ function AdminBranches({data, onSave}){
   const [editingBranch, setEditingBranch] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({name:'', country:'India', state:''});
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (showAdd) setShowAdd(false);
+        if (viewingBranch) setViewingBranch(null);
+        if (editingBranch) setEditingBranch(null);
+        if (confirm) setConfirm(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showAdd, viewingBranch, editingBranch, confirm]);
 
   const addBranch = async () => {
     if (!form.name) {
@@ -2445,6 +2501,17 @@ function App(){
       setData(cloudData);
     }
     initializeDb();
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+
+        console.log("Escape pressed - Triggering close...");
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleSave = useCallback(async (newData) => {
