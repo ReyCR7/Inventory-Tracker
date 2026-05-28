@@ -569,102 +569,144 @@ function LandingPage({ onEnter }) {
 }
 
 // ─── AUTH PAGE ───────────────────────────────────────────────────
-function AuthPage({mode, data, onLogin}){
-  const [form, setForm] = useState({email: '', password: ''});
-  const [err, setErr] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Eye toggle state
+function AuthPage({ mode, data, onLogin }) {
+  const [form, setForm] = React.useState({ email: '', password: '', otp: '' });
+  const [err, setErr] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [useOtpMode, setUseOtpMode] = React.useState(false);
+  const [otpSent, setOtpSent] = React.useState(false);
 
-  const handleLogin = () => {
+  // Phase 1: Verify user exists locally, then ask Supabase to send 6-digit OTP
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
     setErr('');
-    const all = mode === 'admin' ? data.admins : data.users;
-    // Safe lookup matching both mapped local data state properties
-    const u = all.find(x => x.email === form.email && (x.password === form.password || x.password_hash === form.password) && x.active);
+    if (!form.email) return setErr('Please enter your email address.');
 
+    setLoading(true);
+    const allowedList = mode === 'admin' ? data.admins : data.users;
+    const isRegistered = allowedList.some(user => user.email.toLowerCase() === form.email.toLowerCase() && user.active);
+
+    if (!isRegistered) {
+      setLoading(false);
+      setErr('Access Denied. This email is not registered in our inventory matrix.');
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.signInWithOtp({ email: form.email.toLowerCase() });
+    setLoading(false);
+
+    if (error) {
+      setErr(error.message);
+    } else {
+      setOtpSent(true);
+      if (typeof toast !== 'undefined') toast('🔑 Verification token dispatched to your registered email!');
+    }
+  };
+
+  // Phase 2: Verify the 6-digit code entered by user
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setErr('');
+    if (!form.otp) return setErr('Please enter the 6-digit code.');
+
+    setLoading(true);
+    const { error } = await supabaseClient.auth.verifyOtp({
+      email: form.email.toLowerCase(),
+      token: form.otp,
+      type: 'email'
+    });
+    setLoading(false);
+
+    if (error) {
+      setErr('Invalid or expired verification code. Please try again.');
+      return;
+    }
+
+    const allowedList = mode === 'admin' ? data.admins : data.users;
+    const matchedProfile = allowedList.find(user => user.email.toLowerCase() === form.email.toLowerCase());
+    
+    if (matchedProfile) {
+      onLogin(matchedProfile);
+    } else {
+      setErr('Authenticated, but no matching local profile record found.');
+    }
+  };
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    setErr('');
+    const allowedList = mode === 'admin' ? data.admins : data.users;
+    const u = allowedList.find(x => x.email.toLowerCase() === form.email.toLowerCase() && (x.password === form.password || x.password_hash === form.password) && x.active);
+    
     if (!u) {
-      setErr('Invalid email or password. Please try again.');
+      setErr('Invalid email or password credentials.');
       return;
     }
     onLogin(u);
-    toast(`Welcome back, ${u.name}! 👋`);
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-bg" />
-      <div className="auth-card">
-        <div style={{textAlign: 'center', marginBottom: 32}}>
-          <h2 style={{fontFamily: 'var(--font-head)', fontSize: 30, fontWeight: 800, letterSpacing: '-1px', marginBottom: 6}}>
-            {mode === 'admin' ? 'Admin Gateway' : 'Employee Access'}
-          </h2>
-          <p style={{color: 'var(--text2)', fontSize: 13, fontWeight: 400}}>AssetX — Inventory Tracker Platform</p>
-        </div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', padding: '20px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: 420, padding: 32, background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r)' }}>
+        <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 800, marginBottom: 6, textAlign: 'center', color: 'var(--text)', letterSpacing: '-0.5px' }}>
+          {mode === 'admin' ? '🦸 ADMIN ACCESS' : '👤 USER PORTAL'}
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center', marginBottom: 24 }}>
+          {useOtpMode ? 'Authenticate securely via One-Time Verification Code' : 'Sign in using your account credentials'}
+        </p>
 
-        <div className="card auth-card-premium" style={{padding: '36px', background: 'var(--bg2)'}}>
-          <div className="flex-col" style={{gap: '4px'}}>
+        {err && (
+          <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--red)', padding: '12px 14px', borderRadius: 'var(--r2)', fontSize: 12, marginBottom: 20 }}>
+            {err}
+          </div>
+        )}
 
-            {/* Interactive Email Field */}
-            <div className="form-group">
-              <input 
-                className="floating-inp" 
-                type="email" 
-                placeholder=" " 
-                value={form.email} 
-                onChange={e => setForm({...form, email: e.target.value})} 
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              />
-              <label className="floating-lbl">Email Address</label>
+        {!useOtpMode ? (
+          /* PRECISE ORIGINAL DESIGN FOR PASSWORD LOGIN */
+          <form onSubmit={handlePasswordSubmit}>
+            <div style={{ marginBottom: 16 }}>
+              <label className="lbl">REGISTERED EMAIL</label>
+              <input type="email" required placeholder="name@company.com" className="inp" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
-
-            {/* Interactive Password Field + Eyeball Toggle */}
-            <div className="form-group" style={{marginBottom: '24px'}}>
-              <input 
-                className="floating-inp" 
-                type={showPassword ? "text" : "password"} 
-                placeholder=" " 
-                value={form.password} 
-                onChange={e => setForm({...form, password: e.target.value})} 
-                onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                style={{paddingRight: '48px'}}
-              />
-              <label className="floating-lbl">Account Password</label>
-              <button 
-                type="button"
-                className="pass-toggle-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                title={showPassword ? "Hide Password" : "Show Password"}
-              >
-                {showPassword ? '👁️' : '🙈'}
+            <div style={{ marginBottom: 12 }}>
+              <label className="lbl">ACCOUNT PASSWORD</label>
+              <input type="password" required placeholder="••••••••" className="inp" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <div style={{ textAlign: 'right', marginBottom: 24 }}>
+              <button type="button" onClick={() => { setUseOtpMode(true); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                Forgot Password? Login via OTP
               </button>
             </div>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+              Sign In securely
+            </button>
+          </form>
+        ) : (
+          /* PRECISE ORIGINAL DESIGN FOR OTP LOGINS */
+          <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
+            <div style={{ marginBottom: 16 }}>
+              <label className="lbl">REGISTERED WORK EMAIL</label>
+              <input type="email" required disabled={otpSent} placeholder="mr.tanish13@gmail.com" className="inp" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            </div>
 
-            {err && (
-              <div style={{
-                color: 'var(--red)', 
-                fontSize: 13, 
-                background: 'rgba(239,68,68,.08)', 
-                padding: '12px 14px', 
-                borderRadius: 'var(--r2)', 
-                border: '1px solid rgba(239,68,68,.15)',
-                marginBottom: '16px',
-                animation: 'slideUp 0.2s ease'
-              }}>
-                {err}
+            {otpSent && (
+              <div style={{ marginBottom: 24 }}>
+                <label className="lbl">ENTER 6-DIGIT SECURITY CODE</label>
+                <input type="text" maxLength="6" required placeholder="123456" className="inp" value={form.otp} onChange={e => setForm({ ...form, otp: e.target.value })} style={{ letterSpacing: 6, textAlign: 'center', fontSize: 16, fontWeight: 'bold' }} />
               </div>
             )}
 
-            <button 
-              className={`btn ${mode === 'admin' ? 'btn-gold' : 'btn-primary'}`} 
-              style={{width: '100%', justifyContent: 'center', padding: '14px', fontSize: '14px', borderRadius: 'var(--r2)'}} 
-              onClick={handleLogin}
-            >
-              Secure Sign In
+            <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: 16 }}>
+              {loading ? 'Processing security layer...' : otpSent ? 'Verify Code & Enter Dashboard' : 'Send Secure Login Code'}
             </button>
-          </div>
-        </div>
-
-        <p style={{textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--text3)'}}>
-          Protected by enterprise-grade token security • v2.0
-        </p>
+            
+            <div style={{ textAlign: 'center' }}>
+              <button type="button" onClick={() => { setUseOtpMode(false); setOtpSent(false); setErr(''); }} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>
+                Back to standard password login
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
