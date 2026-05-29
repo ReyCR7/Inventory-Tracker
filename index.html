@@ -1414,7 +1414,6 @@ function AdminDevices({data,currentUser,onSave}){
               const branch=data.company.branches.find(b=>b.id===d.branch);
               const expSoon=isExpiringSoon(d),expired=isExpired(d);
               return < tr key = {d . id } >
-                // In AdminDevices function, find the <td> that opens the modal:
                 <td onClick={() => setViewingDevice(d)} style={{ cursor: 'pointer', textAlign: 'left' }}>
                    <div className="flex-gap">
                       <span style={{fontSize:22}}>{typeIcon[d.type]||'📦'}</span>
@@ -1440,7 +1439,7 @@ function AdminDevices({data,currentUser,onSave}){
                       <button className="btn btn-danger" style={{padding:'5px 10px',fontSize:11}} onClick={()=>deleteDevice(d.id)}>🗑</button>
                    </div>
                 </td>
-              </tr>;
+              </tr>
             })}
           </tbody>
         </table>
@@ -1498,13 +1497,12 @@ function AdminUsers({data,currentUser,onSave}){
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
         if (showAdd) setShowAdd(false);
-        if (editingUser) setEditingUser(null);
-        if (viewingUser) setViewingUser(null); // Add this
+        if (editingUser) setEditingUser(null); // Updated variable
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showAdd, editingUser, viewingUser]); 
+  }, [showAdd, editingUser]); // Updated dependency
   const list=tab==='users'?data.users:data.admins;
   const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
   const toggleActive=(id,isAdmin)=>{
