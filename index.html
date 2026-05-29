@@ -1497,12 +1497,12 @@ function AdminUsers({data,currentUser,onSave}){
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
         if (showAdd) setShowAdd(false);
-        if (editing) setEditing(null);
+        if (editingUser) setEditingUser(null);
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showAdd, editing]);
+  }, [showAdd, editingUser]);
   const list=tab==='users'?data.users:data.admins;
   const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
   const toggleActive=(id,isAdmin)=>{
