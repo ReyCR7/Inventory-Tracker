@@ -1499,11 +1499,12 @@ function AdminUsers({data,currentUser,onSave}){
       if (e.key === 'Escape') {
         if (showAdd) setShowAdd(false);
         if (editingUser) setEditingUser(null);
+        if (viewingUser) setViewingUser(null); // Add this
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showAdd, editingUser]);
+  }, [showAdd, editingUser, viewingUser]); 
   const list=tab==='users'?data.users:data.admins;
   const filtered=list.filter(u=>!search||u.name.toLowerCase().includes(search.toLowerCase())||u.email.toLowerCase().includes(search.toLowerCase()));
   const toggleActive=(id,isAdmin)=>{
