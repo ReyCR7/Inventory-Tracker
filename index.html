@@ -1369,6 +1369,7 @@ function AdminDevices({data,currentUser,onSave}){
   const[viewHistory,setViewHistory]=useState(null);
   const[confirm,setConfirm]=useState(null);
   const [viewingDevice, setViewingDevice] = useState(null);
+  
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
@@ -1378,10 +1379,10 @@ function AdminDevices({data,currentUser,onSave}){
         if (showAdd) setShowAdd(false);
       }
     };
-
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
   }, [editing, assigning, viewHistory, showAdd]);
+
   const allUsers=[...data.users,...data.admins];
   const filtered=data.devices.filter(d=>{
     const matchStatus=filter==='All'||d.status===filter;
@@ -1394,6 +1395,7 @@ function AdminDevices({data,currentUser,onSave}){
   const typeIcon={Laptop:'💻',Desktop:'🖥️',Monitor:'🖵',Printer:'🖨️',Scanner:'📠',Phone:'📱',Tablet:'📟',Server:'🗄️',Router:'📡',Switch:'🔀',UPS:'🔋',Camera:'📷',Projector:'📽️',Other:'📦'};
   const isExpiringSoon=d=>{if(!d.warranty)return false;const diff=(new Date(d.warranty)-new Date())/(1000*60*60*24*30);return diff>0&&diff<3;};
   const isExpired=d=>{if(!d.warranty)return false;return new Date(d.warranty)<new Date();};
+  
   return <div>
     <div className="topbar">
       <div><div className="section-head">Device Inventory</div><div className="section-sub">Manage all company devices, assignments, and warranty tracking</div></div>
@@ -1408,15 +1410,13 @@ function AdminDevices({data,currentUser,onSave}){
     <div className="card" style={{overflow:'hidden'}}>
       <div className="table-wrap">
         <table>
-          <thead><tr>
-            <th>Device</th><th>Serial Number</th><th>Type</th><th>Branch</th><th>Assigned To</th><th>Status</th><th>Warranty</th><th>Actions</th>
-          </tr></thead>
+          <thead><tr><th>Device</th><th>Serial Number</th><th>Type</th><th>Branch</th><th>Assigned To</th><th>Status</th><th>Warranty</th><th>Actions</th></tr></thead>
           <tbody>
             {filtered.map(d=>{
               const assignee=allUsers.find(u=>u.id===d.assignedTo);
               const branch=data.company.branches.find(b=>b.id===d.branch);
               const expSoon=isExpiringSoon(d),expired=isExpired(d);
-              return < tr key = {d . id } >
+              return <tr key={d.id}>
                 <td onClick={() => setViewingDevice(d)} style={{ cursor: 'pointer', textAlign: 'left' }}>
                    <div className="flex-gap">
                       <span style={{fontSize:22}}>{typeIcon[d.type]||'📦'}</span>
@@ -1431,9 +1431,7 @@ function AdminDevices({data,currentUser,onSave}){
                 <td style={{fontSize:12,color:'var(--text2)'}}>{branch?.name||'—'}</td>
                 <td>{assignee?<div className="flex-gap"><div className="avatar avatar-sm">{assignee.bitmoji}</div><div><p style={{fontSize:12,fontWeight:500}}>{assignee.name}</p><p style={{fontSize:10,color:'var(--text3)'}}>{assignee.department}</p></div></div>:<span style={{color:'var(--text3)',fontSize:12}}>Unassigned</span>}</td>
                 <td><span className={`tag ${d.status==='Available'?'tag-resolved':d.status==='Assigned'?'tag-open':d.status==='Under Repair'?'tag-progress':'tag-critical'}`}>{d.status}</span></td>
-                <td>
-                  {d.warranty?<span style={{fontSize:12,color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{expired?'⚠ Expired':expSoon?'⚡ Soon':fmtDate(d.warranty)}</span>:<span style={{color:'var(--text3)',fontSize:12}}>—</span>}
-                </td>
+                <td>{d.warranty?<span style={{fontSize:12,color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{expired?'⚠ Expired':expSoon?'⚡ Soon':fmtDate(d.warranty)}</span>:<span style={{color:'var(--text3)',fontSize:12}}>—</span>}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
                     <button className="btn btn-ghost" onClick={() => setAssigning(d)}>🔗</button>
@@ -1449,107 +1447,58 @@ function AdminDevices({data,currentUser,onSave}){
         {filtered.length===0&&<div className="empty-state" style={{padding:40}}><div>📦</div><p>No devices found.</p></div>}
       </div>
     </div>
+    
+    {/* MODALS */}
     {showAdd&&<AddDeviceModal data={data} onSave={d=>{onSave(d);setShowAdd(false);}} onClose={()=>setShowAdd(false)}/>}
     {editing&&<AddDeviceModal data={data} device={editing} onSave={d=>{onSave(d);setEditing(null);}} onClose={()=>setEditing(null)}/>}
     {assigning&&<AssignDeviceModal data={data} device={assigning} onSave={d=>{onSave(d);setAssigning(null);}} onClose={()=>setAssigning(null)}/>}
-    {viewHistory&&<div className="modal-overlay" onClick={()=>setViewHistory(null)}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
-        <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:18,fontWeight:700}}>📋 Assignment History — {viewHistory.name}</h2></div>
-        <div className="modal-body">
-          {viewHistory.history.length===0&&<div className="empty-state"><div>📋</div><p>No assignment history yet.</p></div>}
-          <div>
-            {viewHistory.history.map((h,i)=>{
-              const u=allUsers.find(x=>x.id===h.user);
-              return <div key={i} className="timeline-item">
-                <div className="timeline-dot" style={{background:h.to?'var(--surface3)':'var(--accent)',color:h.to?'var(--text3)':'#fff'}}>{i+1}</div>
-                <div style={{flex:1}}>
-                  <div className="flex-gap" style={{marginBottom:4}}>
-                    <div className="avatar avatar-sm">{u?.bitmoji||'?'}</div>
-                    <div>
-                      <p style={{fontSize:13,fontWeight:500}}>{u?.name||'Unknown'}</p>
-                      <p style={{fontSize:11,color:'var(--text3)'}}>{u?.department}</p>
-                    </div>
-                  </div>
-                  <div className="flex-gap" style={{fontSize:12,color:'var(--text2)'}}>
-                    <span>From: {h.from}</span>
-                    <span>→</span>
-                    <span style={{color:h.to?'var(--text2)':'var(--green)'}}>{h.to||'Current'}</span>
-                  </div>
-                </div>
-              </div>;
-            })}
-          </div>
-        </div>
-        <div className="modal-foot"><button className="btn btn-ghost" onClick={()=>setViewHistory(null)}>Close</button></div>
-      </div>
-    </div>}
     {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
     {viewingDevice && <ViewDeviceModal device={viewingDevice} data={data} onClose={() => setViewingDevice(null)} />}
-      {viewHistory && (
-  <div className="modal-overlay" onClick={() => setViewHistory(null)}>
-    <div className="modal" onClick={e => e.stopPropagation()}>
-      <div className="modal-head">
-        <h2 style={{fontFamily:'var(--font-head)', fontSize:18, fontWeight:700}}>
-          📋 Assignment History — {viewHistory.name}
-        </h2>
-      </div>
-      <div className="modal-body">
-        {(!viewHistory.history || viewHistory.history.length === 0) ? (
-          <div className="empty-state">
-            <div>📋</div>
-            <p>No assignment history yet.</p>
+    
+    {viewHistory && (
+      <div className="modal-overlay" onClick={() => setViewHistory(null)}>
+        <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-head">
+            <h2 style={{fontFamily:'var(--font-head)', fontSize:18, fontWeight:700}}>📋 Assignment History — {viewHistory.name}</h2>
           </div>
-        ) : (
-          <div>
-        {viewHistory && (
-          <div className="modal-overlay" onClick={() => setViewHistory(null)}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-head">
-                <h2 style={{fontFamily:'var(--font-head)', fontSize:18, fontWeight:700}}>
-                  📋 Assignment History — {viewHistory.name}
-                </h2>
-              </div>
-              <div className="modal-body">
-                {(!viewHistory.history || viewHistory.history.length === 0) ? (
-                  <div className="empty-state">
-                    <div>📋</div>
-                    <p>No assignment history yet.</p>
-                  </div>
-                ) : (
-                  <div>
-                    {viewHistory.history.map((h, i) => {
-                      const u = allUsers.find(x => x.id === h.user);
-                      return (
-                        <div key={i} className="timeline-item">
-                          <div className="timeline-dot" style={{background: h.to ? 'var(--surface3)' : 'var(--accent)', color: h.to ? 'var(--text3)' : '#fff'}}>
-                            {i + 1}
-                          </div>
-                          <div style={{flex: 1}}>
-                            <div className="flex-gap" style={{marginBottom: 4}}>
-                              <div className="avatar avatar-sm">{u?.bitmoji || '?'}</div>
-                              <div>
-                                <p style={{fontSize: 13, fontWeight: 500}}>{u?.name || 'Unknown'}</p>
-                                <p style={{fontSize: 11, color: 'var(--text3)'}}>{u?.department || '—'}</p>
-                              </div>
-                            </div>
-                            <div className="flex-gap" style={{fontSize: 12, color: 'var(--text2)'}}>
-                              <span>From: {h.from}</span>
-                              <span>→</span>
-                              <span style={{color: h.to ? 'var(--text2)' : 'var(--green)'}}>{h.to || 'Current'}</span>
-                            </div>
+          <div className="modal-body">
+            {(!viewHistory.history || viewHistory.history.length === 0) ? (
+              <div className="empty-state"><div>📋</div><p>No assignment history yet.</p></div>
+            ) : (
+              <div>
+                {viewHistory.history.map((h, i) => {
+                  const u = allUsers.find(x => x.id === h.user);
+                  return (
+                    <div key={i} className="timeline-item">
+                      <div className="timeline-dot" style={{background: h.to ? 'var(--surface3)' : 'var(--accent)', color: h.to ? 'var(--text3)' : '#fff'}}>{i + 1}</div>
+                      <div style={{flex: 1}}>
+                        <div className="flex-gap" style={{marginBottom: 4}}>
+                          <div className="avatar avatar-sm">{u?.bitmoji || '?'}</div>
+                          <div>
+                            <p style={{fontSize: 13, fontWeight: 500}}>{u?.name || 'Unknown'}</p>
+                            <p style={{fontSize: 11, color: 'var(--text3)'}}>{u?.department || '—'}</p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                        <div className="flex-gap" style={{fontSize: 12, color: 'var(--text2)'}}>
+                          <span>From: {h.from}</span>
+                          <span>→</span>
+                          <span style={{color: h.to ? 'var(--text2)' : 'var(--green)'}}>{h.to || 'Current'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="modal-foot">
-                <button className="btn btn-ghost" onClick={() => setViewHistory(null)}>Close</button>
-              </div>
-            </div>
+            )}
           </div>
-        )}
+          <div className="modal-foot">
+            <button className="btn btn-ghost" onClick={() => setViewHistory(null)}>Close</button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>;
+}
 
 // ─── ADMIN USERS ─────────────────────────────────────────────────
 function AdminUsers({data,currentUser,onSave}){
