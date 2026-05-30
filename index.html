@@ -1124,28 +1124,39 @@ function NewTicketModal({data,currentUser,onSave,onClose}){
 function AssignDeviceModal({data,device,onSave,onClose}){
   const[userId,setUserId]=useState('');
   const allUsers=[...data.users,...data.admins];
-  const unassign=()=>{
-    const devs=data.devices.map(d=>{
-      if(d.id!==device.id)return d;
-      const history=d.history.map(h=>h.user===d.assignedTo&&!h.to?{...h,to:now()}:h);
-      return{...d,status:'Available',assignedTo:null,assignedDate:null,history};
+  const unassign = () => {
+  const devs = data.devices.map(d => {
+    if (d.id !== device.id) return d;    
+    const currentHistory = d.history ?? [];
+    const history = currentHistory.map(h => h.user === d.assignedTo && !h.to ? { ...h, to: now() } : h);
+    
+    return { ...d, status: 'Available', assignedTo: null, assignedDate: null, history };
     });
-    onSave({...data,devices:devs});
+    onSave({ ...data, devices: devs });
     toast('Device unassigned.');
     onClose();
   };
-  const assign=()=>{
-    if(!userId){toast('Please select a user.','error');return;}
-    const devs=data.devices.map(d=>{
-      if(d.id!==device.id)return d;
-      const history=[...d.history.map(h=>h.user===d.assignedTo&&!h.to?{...h,to:now()}:h),{user:userId,from:now(),to:null}];
-      return{...d,status:'Assigned',assignedTo:userId,assignedDate:now(),history};
+  
+  const assign = () => {
+  if (!userId) {
+    toast('Please select a user.', 'error');
+    return;
+  }
+  const devs = data.devices.map(d => {
+    if (d.id !== device.id) return d;
+    const currentHistory = d.history ?? [];     
+    const history = [
+      ...currentHistory.map(h => h.user === d.assignedTo && !h.to ? { ...h, to: now() } : h),
+      { user: userId, from: now(), to: null }
+    ];
+    return { ...d, status: 'Assigned', assignedTo: userId, assignedDate: now(), history };
     });
-    onSave({...data,devices:devs});
-    const u=allUsers.find(x=>x.id===userId);
+    onSave({ ...data, devices: devs });
+    const u = allUsers.find(x => x.id === userId);
     toast(`Device assigned to ${u?.name}!`);
     onClose();
   };
+  
   return <div className="modal-overlay" onClick={onClose}>
     <div className="modal" onClick={e=>e.stopPropagation()}>
       <div className="modal-head"><h2 style={{fontFamily:'var(--font-head)',fontSize:20,fontWeight:700}}>🔗 Assign Device</h2></div>
