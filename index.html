@@ -1358,6 +1358,9 @@ function AdminTickets({data,currentUser,onSave}){
 
 // ─── ADMIN DEVICES ───────────────────────────────────────────────
 function AdminDevices({data,currentUser,onSave}){
+  if (!data || !data.devices) {
+    return <div>Loading data...</div>;
+  }
   const[search,setSearch]=useState('');
   const[filter,setFilter]=useState('All');
   const[showAdd,setShowAdd]=useState(false);
@@ -1432,12 +1435,12 @@ function AdminDevices({data,currentUser,onSave}){
                   {d.warranty?<span style={{fontSize:12,color:expired?'var(--red)':expSoon?'var(--gold)':'var(--green)'}}>{expired?'⚠ Expired':expSoon?'⚡ Soon':fmtDate(d.warranty)}</span>:<span style={{color:'var(--text3)',fontSize:12}}>—</span>}
                 </td>
                 <td>
-                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
-                      <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setAssigning(d)}>🔗</button>
-                      <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setViewHistory(d)}>📋</button>
-                      <button className="btn btn-ghost" style={{padding:'5px 10px',fontSize:11}} onClick={()=>setEditing(d)}>✏️</button>
-                      <button className="btn btn-danger" style={{padding:'5px 10px',fontSize:11}} onClick={()=>deleteDevice(d.id)}>🗑</button>
-                   </div>
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                    <button className="btn btn-ghost" onClick={() => setAssigning(d)}>🔗</button>
+                    <button className="btn btn-ghost" onClick={() => setViewHistory(d)}>📋</button>
+                    <button className="btn btn-ghost" onClick={() => setEditing(d)}>✏️</button>
+                    <button className="btn btn-danger" onClick={() => deleteDevice(d.id)}>🗑</button>
+                  </div>
                 </td>
               </tr>
             })}
@@ -1482,6 +1485,21 @@ function AdminDevices({data,currentUser,onSave}){
     </div>}
     {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
     {viewingDevice && <ViewDeviceModal device={viewingDevice} data={data} onClose={() => setViewingDevice(null)} />}
+    {/* Modals triggered by buttons above */}
+      {assigning && (
+        <AssignModal 
+          device={assigning} 
+          onClose={() => setAssigning(null)} 
+          onSave={onSave} 
+        />
+      )}
+      
+      {viewHistory && (
+        <ViewHistoryModal 
+          device={viewHistory} 
+          onClose={() => setViewHistory(null)} 
+        />
+      )}
   </div>;
 }
 
