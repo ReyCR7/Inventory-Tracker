@@ -1485,23 +1485,69 @@ function AdminDevices({data,currentUser,onSave}){
     </div>}
     {confirm&&<ConfirmModal msg={confirm.msg} onOk={confirm.ok} onCancel={()=>setConfirm(null)}/>}
     {viewingDevice && <ViewDeviceModal device={viewingDevice} data={data} onClose={() => setViewingDevice(null)} />}
-    {/* Modals triggered by buttons above */}
-      {assigning && (
-        <AssignModal 
-          device={assigning} 
-          onClose={() => setAssigning(null)} 
-          onSave={onSave} 
-        />
-      )}
-      
       {viewHistory && (
-        <ViewHistoryModal 
-          device={viewHistory} 
-          onClose={() => setViewHistory(null)} 
-        />
-      )}
-  </div>;
-}
+  <div className="modal-overlay" onClick={() => setViewHistory(null)}>
+    <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <h2 style={{fontFamily:'var(--font-head)', fontSize:18, fontWeight:700}}>
+          📋 Assignment History — {viewHistory.name}
+        </h2>
+      </div>
+      <div className="modal-body">
+        {(!viewHistory.history || viewHistory.history.length === 0) ? (
+          <div className="empty-state">
+            <div>📋</div>
+            <p>No assignment history yet.</p>
+          </div>
+        ) : (
+          <div>
+              {viewHistory && (
+  <div className="modal-overlay" onClick={() => setViewHistory(null)}>
+    <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal-head">
+        <h2>📋 Assignment History — {viewHistory.name}</h2>
+      </div>
+      <div className="modal-body">
+        {(!viewHistory.history || viewHistory.history.length === 0) ? (
+          <div className="empty-state">
+            <div>📋</div>
+            <p>No assignment history yet.</p>
+          </div>
+        ) : (
+          <div>
+            {viewHistory.history.map((h, i) => {
+              const u = allUsers.find(x => x.id === h.user);
+              return (
+                <div key={i} className="timeline-item">
+                  <div className="timeline-dot" style={{background: h.to ? 'var(--surface3)' : 'var(--accent)', color: h.to ? 'var(--text3)' : '#fff'}}>
+                    {i + 1}
+                  </div>
+                  <div style={{flex: 1}}>
+                    <div className="flex-gap" style={{marginBottom: 4}}>
+                      <div className="avatar avatar-sm">{u?.bitmoji || '?'}</div>
+                      <div>
+                        <p style={{fontSize: 13, fontWeight: 500}}>{u?.name || 'Unknown'}</p>
+                        <p style={{fontSize: 11, color: 'var(--text3)'}}>{u?.department || '—'}</p>
+                      </div>
+                    </div>
+                    <div className="flex-gap" style={{fontSize: 12, color: 'var(--text2)'}}>
+                      <span>From: {h.from}</span>
+                      <span>→</span>
+                      <span style={{color: h.to ? 'var(--text2)' : 'var(--green)'}}>{h.to || 'Current'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="modal-foot">
+        <button className="btn btn-ghost" onClick={() => setViewHistory(null)}>Close</button>
+      </div>
+    </div>
+  </div>
+)}
 
 // ─── ADMIN USERS ─────────────────────────────────────────────────
 function AdminUsers({data,currentUser,onSave}){
